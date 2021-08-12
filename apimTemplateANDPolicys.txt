@@ -1,0 +1,814 @@
+1.go to extractor branch and download the files "azure-api-management-devops-resource-kit-master"
+2.go to file "azure-api-management-devops-resource-kit-master/azure-api-management-devops-resource-kit-master/src/APIM_ARMTemplate/apimtemplate"
+3.edit extractorparms.json 
+{
+    "sourceApimName": "",//apim instance ex:apim-uks-nprd-ces-0001 //dev
+    "destinationApimName": "",//apim instance ex:apim-uks-nprd-ces-0002 //sit
+    "resourceGroup": "",//source apim resource group ex:res-uks-nprd-ii-civldev0001 //dev resource group
+    "fileFolder": "",//file path to store ex:"E:\\CEFA\\chetan\\apim_generated_scripts_for_reporting",
+    "multipleAPIs": ""//apim api name(setting tab) ex:"blob-api,manage-assetdetails,manage-compliance,manage-defects,manage-lookups,manage-suppliers,manage-task-list,manage-userroles" // all this name from apim api setting name
+}
+4.use cmd at the path point2
+5.az login
+6.az account set --subscription "sub-ii-nonproduction" //for sourceapimname subscription ex: dev subscription
+7.dotnet run extract --extractorConfig extractorparams.json 
+
+open foledr apim_generated_scripts_for_reporting
+\blob-api
+	apim-uks-nprd-ces-0001-backends.template.json
+	apim-uks-nprd-ces-0001-blob-api-api.template.json
+	apim-uks-nprd-ces-0001-globalServicePolicy.template.json
+	apim-uks-nprd-ces-0001-namedValues.template.json
+	apim-uks-nprd-ces-0001-parameters.json
+\manage-assetdetails
+\manage-compliance
+\MultipleApisMasterFolder
+	apim-uks-nprd-ces-0001-apis.template.json
+	apim-uks-nprd-ces-0001-backends.template.json
+	apim-uks-nprd-ces-0001-globalServicePolicy.template.json
+	apim-uks-nprd-ces-0001-loggers.template.json
+	apim-uks-nprd-ces-0001-namedValues.template.json
+	apim-uks-nprd-ces-0001-parameters.json
+	apim-uks-nprd-ces-0001-products.template.json
+
+open the vs code and open the project ces-apim-scripts
+
+1.is there any policy added at the globalevel please copy the content of the file 
+	from=>\MultipleApisMasterFolder\apim-uks-nprd-ces-0001-globalServicePolicy.template.json
+  	to=>ces-apim-scripts\shared\globalServicePolicy.template.json
+2.MultipleApisMasterFolder\apim-uks-nprd-ces-0001-namedValues.template.json is there named value added please copy the content 
+	to=>ces-apim-scripts\shared\dev-namedValues.json
+3.MultipleApisMasterFolder\apim-uks-nprd-ces-0001-parameters.json for tis any destination apim changed copy content to
+	to=>ces-apim-scripts\shared\parameters.json 
+
+
+
+4.apim_generated_scripts_for_reporting\manage-assetdetails-api\apim-uks-nprd-ces-0001-manage-assetdetails-api.template.json rename this file by removeing apim-uks-nprd-ces-0001-
+5.apim_generated_scripts_for_reporting\manage-assetdetails-api\apim-uks-nprd-ces-0001-parameters.json rename this to manage-assetdetails-parameters.json 
+
+identical files
+MultipleApisMasterFolder\apim-uks-nprd-ces-0001-globalServicePolicy.template.json=>manage-assetdetails\apim-uks-nprd-ces-0001-globalServicePolicy.template.json
+MultipleApisMasterFolder\apim-uks-nprd-ces-0001-namedValues.template.json
+MultipleApisMasterFolder\apim-uks-nprd-ces-0001-parameters.json
+
+
+
+
+open file path to store
+
+<inbound>
+        <base />
+        <cache-lookup vary-by-developer="true" vary-by-developer-groups="false" allow-private-response-caching="true" must-revalidate="true" downstream-caching-type="none" caching-type="internal">
+            <vary-by-header>X-TaskList-Filters</vary-by-header>
+            <vary-by-query-parameter>isSupplierSearch</vary-by-query-parameter>
+        </cache-lookup>
+        <set-backend-service id="apim-generated-policy" backend-id="{{FnAppCivilManageTaskList}}" />
+        <rewrite-uri template="{{TaskListSearchFunction}}" />
+
+<set-variable name="isFileName" value="@(context.Request.Headers.GetValueOrDefault("X-File-Name","").Contains("CES_TaskListPlannedDateUpload_") || context.Request.Headers.GetValueOrDefault("X-File-Name","").Contains("CES_RiskAssessmentStatus_"))" />
+        <choose>
+            <when condition="@(context.Variables.GetValueOrDefault<bool>("isFileName"))" />
+            <otherwise>
+                <return-response>
+                    <set-status code="400" reason="Bad Request" />
+                    <set-body>Incorrect File Name</set-body>
+                </return-response>
+            </otherwise>
+        </choose>
+        <set-backend-service base-url="{{ces-la-postexamdates}}" />
+        <rewrite-uri template="/manual/paths/invoke?api-version=2016-10-01" />
+        <set-header id="apim-generated-policy" name="Ocp-Apim-Subscription-Key" exists-action="delete" />
+
+
+
+<validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="unauthorized token">
+            <openid-config url="https://login.microsoftonline.com/{{oAuthTokenIssuerTenantId}}/.well-known/openid-configuration" />
+            <issuers>
+                <issuer>https://sts.windows.net/{{oAuthTokenIssuerTenantId}}/</issuer>
+            </issuers>
+            <required-claims>
+                <claim name="aud" match="any">
+                    <value>api://{{CesWebApp}}</value>
+                </claim>
+            </required-claims>
+
+
+<required-claims>
+                <claim name="aud" match="any">
+                    <value>api://{{CesSuppliersApp}}</value>
+                    <value>api://{{CesWebApp}}</value>
+                </claim>
+            </required-claims>
+
+
+        </validate-jwt>
+
+
+<set-query-parameter name="fileName" exists-action="override">
+            <value>@(context.Request.MatchedParameters["fileName"])</value>
+        </set-query-parameter>
+
+
+
+
+ <set-header name="X-Supplier-Id" exists-action="append">
+            <value>@{
+            string appid = "unknown";
+            string authHeader = context.Request.Headers.GetValueOrDefault("Authorization", "");
+            if (authHeader?.Length > 0)
+            {
+                string[] authHeaderParts = authHeader.Split(' ');
+                if (authHeaderParts?.Length == 2 && authHeaderParts[0].Equals("Bearer", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    Jwt jwt;
+                    if (authHeaderParts[1].TryParseJwt(out jwt))
+                    {
+                        appid = (jwt.Claims.GetValueOrDefault("appid", "unknown"));
+                    }
+                }
+            }
+            return appid;
+            }</value>
+        </set-header>
+
+
+
+<cache-lookup vary-by-developer="true" vary-by-developer-groups="false" allow-private-response-caching="true" must-revalidate="true" downstream-caching-type="none" caching-type="internal">
+            <vary-by-header>Blob</vary-by-header>
+        </cache-lookup>
+        <set-variable name="BlobName" value="@(context.Request.Headers.GetValueOrDefault("Blob"))" />
+        <base />
+        <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="unauthorized token" require-scheme="Bearer" output-token-variable-name="jwt">
+            <openid-config url="https://login.microsoftonline.com/{{oAuthTokenIssuerTenantId}}/.well-known/openid-configuration" />
+            <issuers>
+                <issuer>https://sts.windows.net/{{oAuthTokenIssuerTenantId}}/</issuer>
+            </issuers>
+            <required-claims>
+                <claim name="aud" match="any">
+                    <value>api://{{CesWebApp}}</value>
+                    <value>api://{{CesSuppliersApp}}</value>
+                </claim>
+            </required-claims>
+        </validate-jwt>
+        <choose>
+            <when condition="@(context.Request.Method == "GET" && ((Jwt)context.Variables["jwt"]).Claims["aud"].Contains("api://{{CesWebApp}}"))">
+                <set-backend-service base-url="@{
+                 string blobName = context.Variables.GetValueOrDefault<string>("BlobName");
+                 return String.Format("https://{{storageaccount}}.blob.core.windows.net/{{CEFAContainerName}}/{0}", blobName);
+                }" />
+            </when>
+            <when condition="@(context.Request.Method == "GET" && ((Jwt)context.Variables["jwt"]).Claims["aud"].Contains("api://{{CesSuppliersApp}}"))">
+                <set-backend-service base-url="@{
+                 string blobName = context.Variables.GetValueOrDefault<string>("BlobName");
+                 return String.Format("https://{{storageaccount}}.blob.core.windows.net/{{CEFAContainerName}}/{0}", blobName);
+                }" />
+            </when>
+        </choose>
+        <set-header name="Blob" exists-action="delete" />
+        <set-header name="Container" exists-action="delete" />
+        <set-header name="Ocp-Apim-Subscription-Key" exists-action="delete" />
+        <set-header name="Sec-Fetch-Site" exists-action="delete" />
+        <set-header name="Sec-Fetch-Mode" exists-action="delete" />
+        <set-header name="Sec-Fetch-Dest" exists-action="delete" />
+        <set-header name="Accept" exists-action="delete" />
+        <set-header name="Accept-Encoding" exists-action="delete" />
+        <set-header name="Referer" exists-action="delete" />
+        <set-header name="X-Forwarded-For" exists-action="delete" />
+        <set-header name="x-ms-version" exists-action="override">
+            <value>@{string version = "2017-11-09"; return version;}</value>
+        </set-header>
+        <authentication-managed-identity resource="https://storage.azure.com/" />
+
+
+
+
+
+
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <cache-store duration="1000" />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
+
+
+
+ /ExamData/{fileName}
+
+emplate parameters=fileName
+
+
+
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <base />
+        <authentication-managed-identity resource="{{CyclicTopFunctionAppId}}" output-token-variable-name="msi-access-token" ignore-error="false" />
+        <set-header name="Authorization" exists-action="override">
+            <value>@("Bearer " + (string)context.Variables["msi-access-token"])</value>
+        </set-header>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <set-header name="Access-Control-Allow-Credentials" exists-action="override">
+            <value>true</value>
+        </set-header>
+    </outbound>
+    <on-error>
+        <base />
+        <retry condition="@(context.Response.StatusCode == 500)" count="3" interval="2" max-interval="10" delta="2" first-fast-retry="false" />
+    </on-error>
+</policies>
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+GET IMAGE
+
+QP=imagePath
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <base />
+        <set-variable name="ImagePath" value="@(context.Request.Url.Query.GetValueOrDefault("imagePath",""))" />
+        <set-header name="Ocp-Apim-Subscription-Key" exists-action="delete" />
+        <set-header name="Sec-Fetch-Site" exists-action="delete" />
+        <set-header name="Sec-Fetch-Mode" exists-action="delete" />
+        <set-header name="Sec-Fetch-Dest" exists-action="delete" />
+        <set-header name="Accept" exists-action="delete" />
+        <set-header name="Accept-Encoding" exists-action="delete" />
+        <set-header name="Referer" exists-action="delete" />
+        <set-header name="X-Forwarded-For" exists-action="delete" />
+        <set-header name="x-ms-version" exists-action="override">
+            <value>@{string version = "2017-11-09"; return version;}</value>
+        </set-header>
+        <!--<set-backend-service id="apim-generated-policy" backend-id="pvrstorageaccount" />-->
+        <set-backend-service base-url="https://{{StorageAccountName}}.blob.core.windows.net/" />
+        <choose>
+            <when condition="@(context.Variables["ImagePath"] != "")">
+                <rewrite-uri template="@{
+                    string imagePath = context.Variables.GetValueOrDefault<string>("ImagePath");
+                    return String.Format("/{{PLPRContainerName}}{0}", imagePath);
+                }" />
+            </when>
+            <otherwise>
+                <return-response>
+                    <set-status code="400" reason="Bad Request" />
+                    <set-header name="Content-Type" exists-action="override">
+                        <value>application/json</value>
+                    </set-header>
+                    <set-body>{
+                                "statusCode": "400",
+                                "message": "Required Parameter 'imagePath' is missing"
+                            }</set-body>
+                </return-response>
+            </otherwise>
+        </choose>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
+
+============================================================================================================================================================
+POST
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <choose>
+            <when condition="@(context.Request.Headers.ContainsKey("Authorization") && context.Request.Url.Query.GetValueOrDefault("userId","") == "")">
+                <set-variable name="userId" value="@(context.Request.Headers["Authorization"].First().Split(' ')[1].AsJwt()?.Claims["oid"].FirstOrDefault().ToString())" />
+            </when>
+        </choose>
+        <base />
+        <set-backend-service id="apim-generated-policy" backend-id="{{TrackGeometryFunctionApp}}" />
+        <choose>
+            <when condition="@(context.Variables.ContainsKey("userId"))">
+                <rewrite-uri template="@($"{{DefectsFunction}}?userId={(string)context.Variables["userId"]}")" />
+            </when>
+            <otherwise>
+                <rewrite-uri template="{{DefectsFunction}}" />
+            </otherwise>
+        </choose>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+    <on-error>
+	<base />
+       <choose>
+            <when condition="@(context.Response.StatusCode == 400)">
+                <return-response>
+                    <set-status code="400" reason="Bad Request" />
+                    <set-header name="Content-Type" exists-action="override">
+                        <value>application/json</value>
+                    </set-header>
+                    <set-body>{
+                                "statusCode": "400",
+                                "message": "Bad Request"
+                            }</set-body>
+                </return-response>
+            </when>
+        </choose>
+    </on-error>
+</policies>
+================================================================================================================================
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <base />
+        <set-variable name="userid" value="@(context.Request.Url.Query.GetValueOrDefault("userId",""))" />
+        <choose>
+            <when condition="@(context.Variables["userid"] != "")">
+                <cache-lookup-value key="@("toplevelorgarea_user_id-" + context.Variables["userid"])" variable-name="topLevelOrgAreaUserId" />
+            </when>
+        </choose>
+        <choose>
+            <when condition="@(context.Variables.ContainsKey("topLevelOrgAreaUserId"))">
+                <return-response>
+                    <set-body>@((string)context.Variables["topLevelOrgAreaUserId"])</set-body>
+                </return-response>
+            </when>
+        </choose>
+        <set-backend-service id="apim-generated-policy" backend-id="{{UserFunctionApp}}" />
+        <rewrite-uri template="{{TopLevelBusinessUnitAccessListFunction}}" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <choose>
+            <when condition="@(context.Response.StatusCode == 200 && !context.Variables.ContainsKey("topLevelOrgAreaUserId"))">
+                <cache-store-value key="@("toplevelorgarea_user_id-" + context.Variables["userid"])" value="@((string)context.Response.Body.As<string>(preserveContent: true))" duration="3600" />
+            </when>
+        </choose>
+    </outbound>
+    <on-error>
+        <base />
+        <choose>
+            <when condition="@(context.Response.StatusCode == 400)">
+                <return-response>
+                    <set-status code="400" reason="Bad Request" />
+                    <set-header name="Content-Type" exists-action="override">
+                        <value>application/json</value>
+                    </set-header>
+                    <set-body>{
+                                "statusCode": "400",
+                                "message": "Bad Request"
+                            }</set-body>
+                </return-response>
+            </when>
+        </choose>
+    </on-error>
+</policies>
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <base />
+        <set-variable name="assetFilter" value="@(context.Request.Headers.GetValueOrDefault("X-Asset-Filters",""))" />
+        <set-variable name="isExport" value="@{JObject codes = JObject.Parse((string)context.Variables["assetFilter"]);
+        return (string)codes["is_export_to_doc"];
+        }" />
+        <choose>
+            <when condition="@((string)context.Variables.GetValueOrDefault("isExport")=="Y")" />
+            <otherwise>
+                <cache-lookup vary-by-developer="true" vary-by-developer-groups="false" allow-private-response-caching="true" must-revalidate="true" downstream-caching-type="none" caching-type="internal">
+                    <vary-by-header>X-Asset-Filters</vary-by-header>
+                </cache-lookup>
+            </otherwise>
+        </choose>
+        <set-backend-service id="apim-generated-policy" backend-id="{{FnAppCivilManageAsset}}" />
+        <rewrite-uri template="{{AssetsFunction}}" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <cache-store duration="300" />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
+
+OR_________________
+
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <base />
+        <set-variable name="assetFilter" value="@(context.Request.Headers.GetValueOrDefault("X-Asset-Filters",""))" />
+        <set-variable name="isExport" value="@{JObject codes = JObject.Parse((string)context.Variables["assetFilter"]);
+        return (string)codes["is_export_to_doc"];
+        }" />
+        <choose>
+            <when condition="@(((String)context.Variables["isExport"]).Equals("Y", StringComparison.InvariantCultureIgnoreCase))" />
+            <otherwise>
+                <cache-lookup vary-by-developer="true" vary-by-developer-groups="false" allow-private-response-caching="true" must-revalidate="true" downstream-caching-type="none" caching-type="internal">
+                    <vary-by-header>X-Asset-Filters</vary-by-header>
+                </cache-lookup>
+            </otherwise>
+        </choose>
+        <set-backend-service id="apim-generated-policy" backend-id="{{FnAppCivilManageAsset}}" />
+        <rewrite-uri template="{{AssetsFunction}}" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <cache-store duration="300" />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
+
+OR___________________
+
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <base />
+        <set-variable name="assetFilter" value="@(context.Request.Headers.GetValueOrDefault("X-Asset-Filters",""))" />
+        <set-variable name="isExport" value="@{JObject codes = JObject.Parse((string)context.Variables["assetFilter"]);
+        return (string)codes["is_export_to_doc"];
+        }" />
+        <choose>
+            <when condition="@(((String)context.Variables["isExport"]).Equals("Y", StringComparison.InvariantCultureIgnoreCase))" />
+            <otherwise>
+                  <return-response>
+                    <set-status code="400" reason="Bad Request" />
+                    <set-body>Incorrect File Name</set-body>
+                </return-response>
+            </otherwise>
+        </choose>
+        <set-backend-service id="apim-generated-policy" backend-id="{{FnAppCivilManageAsset}}" />
+        <rewrite-uri template="{{AssetsFunction}}" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <cache-store duration="300" />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
+
+
+ <!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <base />
+        <set-variable name="assetFilter" value="@(context.Request.Headers.GetValueOrDefault("X-Asset-Filters",""))" />
+        <set-variable name="isExport" value="@{JObject codes = JObject.Parse((string)context.Variables["assetFilter"]);
+        return (string)codes["is_export_to_doc"];
+        }" />
+        <choose>
+            <when condition="@(((String)context.Variables.GetValueOrDefault("isExport","")).Equals("Y", StringComparison.InvariantCultureIgnoreCase))" />
+            <otherwise>
+                <return-response>
+                    <set-status code="400" reason="Bad Request" />
+                    <set-body>Incorrect File Name</set-body>
+                </return-response>
+            </otherwise>
+        </choose>
+        <set-backend-service id="apim-generated-policy" backend-id="{{FnAppCivilManageAsset}}" />
+        <rewrite-uri template="{{AssetsFunction}}" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
+
+
+<set-variable name="body" value="@((string)context.Request.Body.As<string>(preserveContent: true))" />
+<set-variable name="fileGuid" value="@(Guid.NewGuid().ToString())" />
+
+
+
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <base />
+        <set-variable name="assetFilter" value="@(context.Request.Headers.GetValueOrDefault("X-Asset-Filters",""))" />
+        <set-variable name="isExport" value="@{JObject codes = JObject.Parse((string)context.Variables["assetFilter"]);
+        return (string)codes["is_export_to_doc"];
+        }" />
+        <choose>
+            <when condition="@(((String)context.Variables.GetValueOrDefault("isExport","")).Equals("Y", StringComparison.InvariantCultureIgnoreCase))" />
+            <otherwise>
+                <cache-lookup vary-by-developer="true" vary-by-developer-groups="false" allow-private-response-caching="true" must-revalidate="true" downstream-caching-type="none" caching-type="internal">
+                    <vary-by-header>X-Asset-Filters</vary-by-header>
+                </cache-lookup>
+            </otherwise>
+        </choose>
+        <set-backend-service id="apim-generated-policy" backend-id="{{FnAppCivilManageAsset}}" />
+        <rewrite-uri template="{{AssetsFunction}}" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <cache-store duration="300" />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
+
+
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <base />
+        <set-variable name="assetFilter" value="@(context.Request.Headers.GetValueOrDefault("X-Asset-Filters",""))" />
+        <set-variable name="isExport" value="@{JObject codes = JObject.Parse((string)context.Variables["assetFilter"]);
+        return (string)codes["is_export_to_doc"];
+        }" />
+        <choose>
+            <when condition="@(((String)context.Variables.GetValueOrDefault("isExport","")).Equals("Y", StringComparison.InvariantCultureIgnoreCase))" />
+            <otherwise>
+                <cache-lookup vary-by-developer="true" vary-by-developer-groups="false" allow-private-response-caching="true" must-revalidate="true" downstream-caching-type="none" caching-type="internal">
+                    <vary-by-header>X-Asset-Filters</vary-by-header>
+                </cache-lookup>
+            </otherwise>
+        </choose>
+        <set-backend-service id="apim-generated-policy" backend-id="{{FnAppCivilManageAsset}}" />
+        <rewrite-uri template="{{AssetsFunction}}" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <cache-store duration="300" />
+    </outbound>
+    <on-error>
+        <choose>
+            <when condition="@(context.Response.StatusCode != 401)">
+                <return-response>
+                    <set-status code="400" reason="Bad Request" />
+                    <set-body>@{return new JObject(
+                        new JProperty("status","400"),
+                        new JProperty("detail", "is_export_to_doc is missing in X-Asset-Filters header request.")).ToString();}</set-body>
+                </return-response>
+            </when>
+        </choose>
+        <base />
+    </on-error>
+</policies>
+
+
+
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <base />
+        <set-variable name="assetFilter" value="@(context.Request.Headers.GetValueOrDefault("X-Asset-Filters",""))" />
+        <set-variable name="isExport" value="@{JObject codes = JObject.Parse((string)context.Variables["assetFilter"]);
+        return (string)codes["is_export_to_doc"];
+        }" />
+        <choose>
+            <when condition="@(((String)context.Variables.GetValueOrDefault("isExport","")).Equals("Y", StringComparison.InvariantCultureIgnoreCase))" />
+            <otherwise>
+                <cache-lookup vary-by-developer="true" vary-by-developer-groups="false" allow-private-response-caching="true" must-revalidate="true" downstream-caching-type="none" caching-type="internal">
+                    <vary-by-header>X-Asset-Filters</vary-by-header>
+                </cache-lookup>
+            </otherwise>
+        </choose>
+        <set-backend-service id="apim-generated-policy" backend-id="{{FnAppCivilManageAsset}}" />
+        <rewrite-uri template="{{AssetsFunction}}" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <cache-store duration="300" />
+    </outbound>
+    <on-error>
+        <choose>
+            <when condition="@(context.Response.StatusCode != 401)">
+                <return-response>
+                    <set-status code="400" reason="Bad Request" />
+                    <set-body>@{return new JObject(
+                        new JProperty("status","400"),
+                        new JProperty("detail", "is_export_to_doc is missing/Header validation failure in X-Asset-Filters header request.")).ToString();}</set-body>
+                </return-response>
+            </when>
+        </choose>
+        <base />
+    </on-error>
+</policies>
+
+
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <base />
+        <set-header name="X-Supplier-Id" exists-action="append">
+            <value>@{
+            string appid = "unknown";
+            string authHeader = context.Request.Headers.GetValueOrDefault("Authorization", "");
+            if (authHeader?.Length > 0)
+            {
+                string[] authHeaderParts = authHeader.Split(' ');
+                if (authHeaderParts?.Length == 2 && authHeaderParts[0].Equals("Bearer", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    Jwt jwt;
+                    if (authHeaderParts[1].TryParseJwt(out jwt))
+                    {
+                        appid = (jwt.Claims.GetValueOrDefault("appid", "unknown"));
+                    }
+                }
+            }
+            return appid;
+            }</value>
+        </set-header>
+        <set-backend-service base-url="{{ces-la-postexamdata}}" />
+        <rewrite-uri template="/manual/paths/invoke?api-version=2016-10-01" />
+        <set-header id="apim-generated-policy" name="Ocp-Apim-Subscription-Key" exists-action="delete" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>

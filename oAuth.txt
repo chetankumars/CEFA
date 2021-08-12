@@ -1,0 +1,9 @@
+Authorization request method
+GET
+
+AuthURL:https://login.microsoftonline.com/c22cc3e1-5d7f-4f4d-be03-d5a158cc9409/oauth2/v2.0/authorize
+Access Token URL:https://login.microsoftonline.com/c22cc3e1-5d7f-4f4d-be03-d5a158cc9409/oauth2/v2.0/token
+ClientID:b7789d1f-defb-4f49-9681-bbea38b8a5e3
+ClientSecret:uZ1Z0Ig7O~yMKLq_0SBykNs_nVQAL10b..
+Scope:api://bdfab35e-b1b1-41a1-8c93-3ef099640d67/.default
+GrantType:Client credentials

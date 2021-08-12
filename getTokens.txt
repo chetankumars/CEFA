@@ -1,0 +1,78 @@
+
+1.[{"key":"response_type","value":"code","description":""}]
+https://login.microsoftonline.com/f0e5008e-b6ff-41dc-a910-94fb649ade85/oauth2/v2.0/authorize?client_id=e151a984-a0b4-473b-a3a8-d3970a3bda42&response_type=code&redirect_uri=https://www.google.com&scope=api://567ee03a-ba43-4f17-a492-f0dabedfd52c/.default&response_mode=query
+https://cesapim.developer.azure-api.net/signin-oauth/code/callback/ces-suppliers?
+code=0.ASUAjgDl8P-23EGpEJT7ZJrehYSpUeG0oDtHo6jTlwo72kIlAC0.AQABAAIAAAD--DLA3VO7QrddgJg7WevrhwAMIw_3SdYcty3FdHH8ULdbICqT_c5zicONJI2IKxo29XUzxjkDZaRdHWDFTMkBJq6x6DX5bjGiYjrYps2mPuMtJ-uu4d5mpSvVg2bZjG-fDODsHzo3CUJ5SV5_9RmXg6_arzVa1cSYjwiZK2L29FArn8qSEwBXcIUbzBYFi-YKO4dKIlPUMcPPKbpXI0y1FaU_LRyKuRT3Etwm_3xh2njCYjFqSb2EwDYjG-xGjv-lCWx8ysW_cIingtlITrsV4pYxHbaOw_pd703gJnGIsgSUx7kog-kez_t7uyS7HFfFiERjIB9ot6N9WO_DS9WUuC9faySLIcQu6om6bZpG_jrvctKZOE8-X1pGlI8jBn7txfNwPVuvMz8kzMgwg7MkEGfI1_--beGiuGdm2bPham7sqlnFHc6vaoza_Y4KxSbVIAZFIZuv-y4SAVf_wQ62X6BSNEG3pbE9-sRUkDxHjiuTRRR30OF9DHW6j_M56WwPHMjSYQlmTO98Q72o36RowVsQNu-EdLmJFBG7mMKuWNX1v0GVkvawsM4YBqItir9APUwh6Bt6mC4MLTyaLUTakicU-zx9s5662hBSmXxJPe7WuTb_AnPUxONajhjzwwQspsC5zo3dYl7xK8vSfoMXFqoYOZEDn_k-zeo5Cb8q0-dAfxfSf1BCI2mfilsKyNfdIp_R2OS_1GNiH-NXSoB-9FdTGonQHd0R52DgPm_f5JHEKTaukO_aYqpGA3E-gg7zRyAtyIFGA9L8gyW-bVk9BFNbalHSV-nuEPi0vNBLUps_UqfEZt5OI9N14cwLs-of8dwd4Ns5MYyQgMtXHDAqLkkZbK_kD3WU4RFv2EH6C4vwpA4H47HTQ4EdHBGmjsdbjbZTZJwOD5Z_Hr5BAt8s4lFt8cY12HkkypAYR1ZzYI3rr6fGy7bSqLpfpmCZU-VDZCDuNzH-famL8mkLDifBp0CqZWQgPAdk8clkaJC6ciDheW4WSmko0FhnsORsfNSCqdFAKckCdDaNAyss9tEfkMOpz6QEbVYSzYh6Ie0aOKsNxwB-EHadXIv6Eu4FjIMepr42nhnUGjYHzOYk9CfvAo4z1NcFhJWi8jGgRe6zXWBlaX43jcjDFhwTFejca6ENHPXPdnVS-STVXTa8RnAupeS-yWT_pdFtsjErX3t25Iq2Wr7EPhCNj5HyJpFHUnxSu61HO9Nzgc0ISnkBg6nnL-_ouNSb88dUt2mwqDep4N8wjtcEuPAuP0W9aMsevfNdxIPQ2b05C2RWrNdL1fe8UYif8KOkF6cIaIwh2IMznqOL_Sp-J4e-IVdDI-q2ItTSeaTSAtldQ2KsF3DYI1jIz6egPuE2c6dcZezCnsj4whHf-MWgEFkHoEPqOdNP_PSUDaxiP-2irpZGaRsgeWFrzOofQ3xJLmSl6MA96Etrcxk4G-rQEmUKsQ-ibMz1o_O_UjyoX1JS5BtX1DvHrhfA7zKI9WrLNjIC1Op-HqQwhSAA
+&session_state=121c9185-87b7-4df9-ab84-b982375ec683#
+
+Call Below URI after getting code from above uri
+1.1 POST [{"key":"grant_type","value":"client_credentials"}]
+https://login.microsoftonline.com/f0e5008e-b6ff-41dc-a910-94fb649ade85/oauth2/token
+[{"key":"client_Id","value":"e151a984-a0b4-473b-a3a8-d3970a3bda42","description":""},{"key":"code","value":"0.ASUAjgDl8P-23EGpEJT7ZJrehYSpUeG0oDtHo6jTlwo72kIlAC0.AQABAAIAAAD--DLA3VO7QrddgJg7WevrRrgInC4jJFvpwkXW_UDUBz7zQBQ8NUJw1wdvLhM3TGvSNbtqFQJ5azoeIKVX0SpNY84JrHlh47gwskoOG_zTz42sO4sNGcuCnWxLe1ylXcRBAPMdqMoL7JDKy8Y5KcUkVCWcv2IP8RojpXszuETzCFJ0Brw17cebamVaArerzp3bf_gvWs6mVS7OFFDZ4duYizm3ck3m6YpwZ06NusLUGARrF9_r0bwprQBA-OHYVZnQKRGBprOOKvb0u6wpQXFWkKnnFnSF-QLH5DP7VZ0N4ATaT_cRVoYcnoBoVVa5v-z89kNBzKjuFAn2mRNXiuKMW6g9wzF8BZsJbammOjz_q9UjqjwNNfyGbJlqNs-iZum1mO62OSKGoKbBIQStAbmQYgQo4tmeMZckG8lRrlx2xm-bL_kqRciuBKfNzShyK3o-DEhw-2Ho61Zm1ozsDGttaN2aaddsTKQX-tKrQsMSycReoQYvBdH0D6D7u6JvpcWn9umae-BKAKCjj8JanjqBwok2FDTVpy4ejWxVQaiyoO7rxY0uSsxF43mjnMeFB2cTgfmAiDNBO-jPhqlbPRm5U9W5Cg6MNbPp4_1By8fWO9zK3bRgeweeAj1XuHflldY0E7p-oS8irvq2aVjN2fWVYtpdYM4TntwYuwNWQ3vwkR0qTRGxuJmmtnZtnGSt7CZYhbrrJTylFXmgDMzmSHFLL6jLzZ5Q8pHtNLmARD0ekb5MSjfRcrkrPJZQJ7G4Y582E8dqBLVdFLdB_HaIty95FCweA25zGOz62uyiKytcwH9vvKOw6LLuOuBdb64_ppmvfQBn3svvKnHU4dWLTZewIbB-J72R2JzFDM0A90zHzaYVvJpKohQ1HwJJsHab0wb0C_O2ph22KKuUt0A_OmIvORkluDiRaT03AEEdA6PxF6pDEXViE-whbBA9z2aphW6qsDx8GDlqDPV57lDrIrKjrIe7SINzosA7UZbP4zNZOj9WtB0xx7EBEAYOrngRRehR7vZoRYcuLMq1gL6RwJnRmGYDHvQeFmfdAPwpqfeXctqp5b8D1iL2T1dOFrAS4zho2zsHdZtjDhg5JgGls6XGbyaIwROOgYa5bA3DhZkDZZtbbUpryDXN1HWY9ec-s9hQpPrru56hV-I92acA71-9rklZNFmF3xN8kTQ_p-dqgJ4-YpwMGJHXfd7WpX4YhAowTHjjpvzfZXZX9L2c2WSAjeTPjfVuB4qYuD1cYCW3KrFFr_9kfDqeVuAzqmw7r8QVGucy_GRt2CgoBrz4mhJdSr4HnnCdgrE9lPNNg4rP3u8ui_rHrRKLQZ2iel4wmE3PtdV8Ct2Mr6H6SbRAesf2XzTytlITUfu8r1lONJWcuUd_zLqWRlcIqH3NXujLs9d9C8iFz8uXINW9YNW0TGbSV6pghISdw2b4cDZBDXfYVJ6ErbeH4kq0mkvl3YTOWP4gAA"},{"key":"grant_type","value":"authorization_code"},{"key":"scope","value":"api://567ee03a-ba43-4f17-a492-f0dabedfd52c/.default","description":""},{"key":"redirect_uri","value":"https://www.google.com","description":""},{"key":"client_secret","value":"-n261W_Xn8qLz1a-SiOf86tuJ.l~AH6~2k","description":""}]
+
+
+2.[{"key":"response_type","value":"id_token","description":""}]
+https://login.microsoftonline.com/f0e5008e-b6ff-41dc-a910-94fb649ade85/oauth2/v2.0/authorize?client_id=e151a984-a0b4-473b-a3a8-d3970a3bda42&response_type=id_token&redirect_uri=https://www.google.com&scope=openid&response_mode=fragment&nonce=678910
+https://www.google.com/#
+id_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Im5PbzNaRHJPRFhFSzFqS1doWHNsSFJfS1hFZyJ9.eyJhdWQiOiJlMTUxYTk4NC1hMGI0LTQ3M2ItYTNhOC1kMzk3MGEzYmRhNDIiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vZjBlNTAwOGUtYjZmZi00MWRjLWE5MTAtOTRmYjY0OWFkZTg1L3YyLjAiLCJpYXQiOjE2MTcwOTQyMDMsIm5iZiI6MTYxNzA5NDIwMywiZXhwIjoxNjE3MDk4MTAzLCJhaW8iOiJBWVFBZS84VEFBQUFIUW5jbVkwVnZoZ3lNSWhmbGVIWDNHNnQwWU9ocDJocUdnTXdYRlN1ZUU3cVg1Q3ZiZ2xCNUk4enV5c3hReUpvODJHcEpyQVdOeFp2VW44V2tRM2g1a2VSdzlaVC80MjdwY0xDZzdoMndJZWV5ZWdnWEJDeWc3czNQdC9NN0F6UW8wb0ZHUTZGdis2ZmF5bDY2QU5MT0ZUSzZOMW8xdnVncSttZ3p1OGo2YVE9IiwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvOTE4ODA0MGQtNmM2Ny00YzViLWIxMTItMzZhMzA0YjY2ZGFkLyIsIm5vbmNlIjoiNjc4OTEwIiwicmgiOiIwLkFTVUFqZ0RsOFAtMjNFR3BFSlQ3WkpyZWhZU3BVZUcwb0R0SG82alRsd283MmtKVEFPVS4iLCJzdWIiOiJyZ2h0am9kdkFjR0p5bGg4Yl84c1NoVzlfWTNaeFY1eGxCRnVCN2NuejJrIiwidGlkIjoiZjBlNTAwOGUtYjZmZi00MWRjLWE5MTAtOTRmYjY0OWFkZTg1IiwidXRpIjoiXzc0MERWS3pRMG1uS2RxVGhfaGpBQSIsInZlciI6IjIuMCJ9.PBSjS0JlbcX1F_RhStvMl64q91yn-gcJkaBODmjKCcEsqxpHxQ5kMtJzytFFjlD5G98i9Xpk29Nkp5H9C0I8xA1x-VfjeM1nis87mqaCUKo2hSiDMDkEMwciDpixV7zWEynFeYY7KKYOvquWQ0rboL2k0R3Z78TYQwTsCQ1sXgDreXOWfZ8XYXbxHfMxHETGyW2Sc2AZWcFV33mYo9xsH6gBVE_GO-BBDdotIsoFksbqwGoOUaAbE2RgGU8-ZicEobMpnQ1PR_Q80lZQd4BF9Kjo_PWA0mvXJ8T4dQvSG0jS9fF6m4DTJj-eW2dLl16KlG593Ox1yAeKz3gw6n9NPQ
+&session_state=121c9185-87b7-4df9-ab84-b982375ec683
+{
+  "typ": "JWT",
+  "alg": "RS256",
+  "kid": "nOo3ZDrODXEK1jKWhXslHR_KXEg"
+}.{
+  "aud": "e151a984-a0b4-473b-a3a8-d3970a3bda42",
+  "iss": "https://login.microsoftonline.com/f0e5008e-b6ff-41dc-a910-94fb649ade85/v2.0",
+  "iat": 1617094203,
+  "nbf": 1617094203,
+  "exp": 1617098103,
+  "aio": "AYQAe/8TAAAAHQncmY0VvhgyMIhfleHX3G6t0YOhp2hqGgMwXFSueE7qX5CvbglB5I8zuysxQyJo82GpJrAWNxZvUn8WkQ3h5keRw9ZT/427pcLCg7h2wIeeyeggXBCyg7s3Pt/M7AzQo0oFGQ6Fv+6fayl66ANLOFTK6N1o1vugq+mgzu8j6aQ=",
+  "idp": "https://sts.windows.net/9188040d-6c67-4c5b-b112-36a304b66dad/",
+  "nonce": "678910",
+  "rh": "0.ASUAjgDl8P-23EGpEJT7ZJrehYSpUeG0oDtHo6jTlwo72kJTAOU.",
+  "sub": "rghtjodvAcGJylh8b_8sShW9_Y3ZxV5xlBFuB7cnz2k",
+  "tid": "f0e5008e-b6ff-41dc-a910-94fb649ade85",
+  "uti": "_740DVKzQ0mnKdqTh_hjAA",
+  "ver": "2.0"
+}.[Signature]
+
+
+3.[{"key":"response_type","value":"token","description":""}]
+https://login.microsoftonline.com/f0e5008e-b6ff-41dc-a910-94fb649ade85/oauth2/v2.0/authorize?client_id=e151a984-a0b4-473b-a3a8-d3970a3bda42&response_type=token&redirect_uri=https://www.google.com&scope=api://567ee03a-ba43-4f17-a492-f0dabedfd52c/.default&response_mode=fragment
+https://www.google.com/#
+access_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Im5PbzNaRHJPRFhFSzFqS1doWHNsSFJfS1hFZyJ9.eyJhdWQiOiI1NjdlZTAzYS1iYTQzLTRmMTctYTQ5Mi1mMGRhYmVkZmQ1MmMiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vZjBlNTAwOGUtYjZmZi00MWRjLWE5MTAtOTRmYjY0OWFkZTg1L3YyLjAiLCJpYXQiOjE2MTcwOTQ2MjYsIm5iZiI6MTYxNzA5NDYyNiwiZXhwIjoxNjE3MDk4NTI2LCJhaW8iOiJBWVFBZS84VEFBQUFkZitOM0hZSTVEWS94OW9xencrbW56NmJMbDBybUNWbDdldTVrbXVJWkp1eDJTUWJiWVFNelo2cjkxc0NhUlozSHlPQXk0Wk1KZXZWK1QyMy8xL290d2dtZWhUdmgxVHBJb0EwVWlSQ2Z5R1FSdDMwbHFPR0xLZUM2N3VpU1pkVTRPM1NIbTh5MUFPVTJLaDJwRFZzSHpRV05WV0h5RldDMk5EZW1TdWV0Vkk9IiwiYXpwIjoiZTE1MWE5ODQtYTBiNC00NzNiLWEzYTgtZDM5NzBhM2JkYTQyIiwiYXpwYWNyIjoiMCIsImlkcCI6ImxpdmUuY29tIiwibmFtZSI6IkJoYXNrYXIgSm9zaGkiLCJvaWQiOiIwZTI3ZGI5Yi0xMjdlLTRlZjUtODk3Ni1iNjJkNTBlOGM2MzEiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJiaGFza2FyLmN0czE5OTdAb3V0bG9vay5jb20iLCJyaCI6IjAuQVNVQWpnRGw4UC0yM0VHcEVKVDdaSnJlaFlTcFVlRzBvRHRIbzZqVGx3bzcya0pUQU9VLiIsInNjcCI6Ii4wMjI1NDk5MS03ODZiLTRhNjQtYWFhYi1hMGI1NmY2YzI2ZGYiLCJzdWIiOiJQYjlkM2hGNFJxdTVfM1RwenRGZXdoM05JZVFtQWJrMXpxenNZQmhYUkdvIiwidGlkIjoiZjBlNTAwOGUtYjZmZi00MWRjLWE5MTAtOTRmYjY0OWFkZTg1IiwidXRpIjoiZ19aWW12M1lna2VGNkstVzB5cy1BQSIsInZlciI6IjIuMCJ9.Ha5SU3E6mtLRAX4sD5u1iwjEHqoc9gvhrYbi7WvYrK2iJiLLuBr4I912RFGPAOddWiX_LCxvf278MGEdqUMomJknbseWnvej7zZaFrw0e0EBtGvUBJxu_aJo662zJAfuyVti2ktuwxN3bCZPTLd3CXPXF9wUgwh-iRoOphi8wSYlWPcCYPaLHsLh4ERACuxfvdUEq5o2RS2Udgf5zotfIenjJ9x98NHGhQqW_cOLKkqd7GGIOHIQjdmhgKQSLjTNk0o6IgZ5z027Fap0EcAHLlorGS3GYSQNeIONnN6BC-pn2tPRcKd1YXfmvqai_Tb-lJuZBsWaXY9E6BwnqxwhOQ
+&token_type=Bearer
+&expires_in=3599
+&scope=api%3a%2f%2f567ee03a-ba43-4f17-a492-f0dabedfd52c%2f.default
+&session_state=121c9185-87b7-4df9-ab84-b982375ec683
+
+{
+  "typ": "JWT",
+  "alg": "RS256",
+  "kid": "nOo3ZDrODXEK1jKWhXslHR_KXEg"
+}.{
+  "aud": "567ee03a-ba43-4f17-a492-f0dabedfd52c",
+  "iss": "https://login.microsoftonline.com/f0e5008e-b6ff-41dc-a910-94fb649ade85/v2.0",
+  "iat": 1617094626,
+  "nbf": 1617094626,
+  "exp": 1617098526,
+  "aio": "AYQAe/8TAAAAdf+N3HYI5DY/x9oqzw+mnz6bLl0rmCVl7eu5kmuIZJux2SQbbYQMzZ6r91sCaRZ3HyOAy4ZMJevV+T23/1/otwgmehTvh1TpIoA0UiRCfyGQRt30lqOGLKeC67uiSZdU4O3SHm8y1AOU2Kh2pDVsHzQWNVWHyFWC2NDemSuetVI=",
+  "azp": "e151a984-a0b4-473b-a3a8-d3970a3bda42",
+  "azpacr": "0",
+  "idp": "live.com",
+  "name": "Bhaskar Joshi",
+  "oid": "0e27db9b-127e-4ef5-8976-b62d50e8c631",
+  "preferred_username": "bhaskar.cts1997@outlook.com",
+  "rh": "0.ASUAjgDl8P-23EGpEJT7ZJrehYSpUeG0oDtHo6jTlwo72kJTAOU.",
+  "scp": ".02254991-786b-4a64-aaab-a0b56f6c26df",
+  "sub": "Pb9d3hF4Rqu5_3TpztFewh3NIeQmAbk1zqzsYBhXRGo",
+  "tid": "f0e5008e-b6ff-41dc-a910-94fb649ade85",
+  "uti": "g_ZYmv3YgkeF6K-W0ys-AA",
+  "ver": "2.0"
+}.[Signature]
+
+
+
+https://login.microsoftonline.com/{tenant}/oauth2/v2.0/logout?post_logout_redirect_uri=https://localhost/myapp/
+
+

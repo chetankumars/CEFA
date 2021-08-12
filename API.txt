@@ -1,0 +1,367 @@
+GET https://apim-uks-sit-ces-0001.azure-api.net/II/CESAPI/assets/recommendation?assetGuid=1 HTTP/1.1
+Host: apim-uks-sit-ces-0001.azure-api.net
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Im5PbzNaRHJPRFhFSzFqS1doWHNsSFJfS1hFZyIsImtpZCI6Im5PbzNaRHJPRFhFSzFqS1doWHNsSFJfS1hFZyJ9.eyJhdWQiOiJhcGk6Ly9iZGZhYjM1ZS1iMWIxLTQxYTEtOGM5My0zZWYwOTk2NDBkNjciLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC9jMjJjYzNlMS01ZDdmLTRmNGQtYmUwMy1kNWExNThjYzk0MDkvIiwiaWF0IjoxNjExNzcyMDI5LCJuYmYiOjE2MTE3NzIwMjksImV4cCI6MTYxMTc3NTkyOSwiYWlvIjoiRTJKZ1lEajJiKzRMaWVYWFV1YjV5eDNZTDNEdE1BQT0iLCJhcHBpZCI6ImI3Nzg5ZDFmLWRlZmItNGY0OS05NjgxLWJiZWEzOGI4YTVlMyIsImFwcGlkYWNyIjoiMSIsImlkcCI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0L2MyMmNjM2UxLTVkN2YtNGY0ZC1iZTAzLWQ1YTE1OGNjOTQwOS8iLCJvaWQiOiI4ZDA5YWMyZC01NTJmLTQyYWUtODEyNS1kN2YwOTViZGE1NDgiLCJyaCI6IjAuQUFBQTRjTXN3bjlkVFUtLUE5V2hXTXlVQ1ItZGVMZjcza2xQbG9HNzZqaTRwZU1DQUFBLiIsInJvbGVzIjpbIkFQSS5SZXF1ZXN0IiwiQ0VTQVBJLlJlcXVlc3QiXSwic3ViIjoiOGQwOWFjMmQtNTUyZi00MmFlLTgxMjUtZDdmMDk1YmRhNTQ4IiwidGlkIjoiYzIyY2MzZTEtNWQ3Zi00ZjRkLWJlMDMtZDVhMTU4Y2M5NDA5IiwidXRpIjoiY3oxMWJ0V3FZMEthSUZJMVRLVjZBQSIsInZlciI6IjEuMCJ9.LMn5joxesVrlQkYSovAIbkXTRMvtQeq2-_YYAMtWTModcKY-e1RDuJmdOuCDR3P7disxpp-Fo1sYsuGyEjDS9CMeEFOp7cDhNKlYCyCRm6ZO1naw1Jsu7Ba5FVxQWqEfj4UjT86Csa2ZGnIOlVBKYU2iB77CONwzlh-uOgYt7ZguofV50lpmDaFOZLU6sciwTlGOjF-nv4aM51ZdjJD_hleGSCi5DxTjtOapk303U5PC5pZJFFpqubXf-HHYbzj6_H9-VaMyY1KdYZxLF4FhkCRxBT70p2DgDJh1Mq52WgHnozQ_qXoaCteHWBXVYfy6mK470pdCWkLOSgkw3B3bXg
+Ocp-Apim-Subscription-Key: 97df662bed40480a84996ec57e6ae7e3;product=cefa
+Ocp-Apim-Trace: true
+
+1.GETSEARCHLOOKUP
+https://fnp-uks-dev-ces-funcedst0002.azurewebsites.net/api/getSearchLookup?userId=5
+https://apim-uks-dev-ces-0001.azure-api.net/II/CESAPI/lookups/basicandadvancesearch?userId=5
+
+2.GET RECOMMENDATION
+https://fnp-uks-dev-ces-funcedst0003.azurewebsites.net/api/getDisplayRecommendation?assetGuid="3978559C2D8345D9E04400306E4AD01A"
+https://apim-uks-dev-ces-0001.azure-api.net/II/CESAPI/assets/recommendation?assetGuid=3978559C2D8345D9E04400306E4AD01A
+
+3.GET get_asset_details
+https://apim-uks-dev-ces-0001.azure-api.net/II/CESAPI/assets/3978559C2D8345D9E04400306E4AD01A?requestType=getcommonassetdetails
+RES:
+{
+    "region": "Southern",
+    "assetdesc": "GREAT SUFFOLK STREET VIADUCT ARCHES 22 - 31A",
+    "route": "Kent",
+    "area": "London Bridge",
+    "ralway_id": "W63",
+    "asset_type": "Viaduct",
+    "op_status": "Functionary",
+    "elr": "HHH",
+    "start_mileage": 0.875,
+    "end_mileage": null,
+    "prim_material": " RBE - Brick",
+    "owning_party": "Network Rail (CE-Struct)",
+    "gps_start": null,
+    "gps_end": null,
+    "stuct_carry": null,
+    "struct_over": null,
+    "hce_flag": "No",
+    "asset_guid": "3978559C2D8345D9E04400306E4AD01A",
+    "total_defect_cnt": 62,
+    "open_defect_cnt": 22,
+    "picture_uri": null,
+    "cmi_score": 71,
+    "ve_comp_stat": null,
+    "de_comp_stat": null,
+    "uw_comp_stat": null
+}
+https://fnp-uks-dev-ces-funcedst0003.azurewebsites.net/api/GetAssetDetails?requestType=getcommonassetdetails&assetGuid=3978559C2D8345D9E04400306E4AD01A
+RES:
+{
+    "region": "Southern",
+    "assetdesc": "GREAT SUFFOLK STREET VIADUCT ARCHES 22 - 31A",
+    "route": "Kent",
+    "area": "London Bridge",
+    "ralway_id": "W63",
+    "asset_type": "Viaduct",
+    "op_status": "Functionary",
+    "elr": "HHH",
+    "start_mileage": 0.875,
+    "end_mileage": null,
+    "prim_material": " RBE - Brick",
+    "owning_party": "Network Rail (CE-Struct)",
+    "gps_start": null,
+    "gps_end": null,
+    "stuct_carry": null,
+    "struct_over": null,
+    "hce_flag": "No",
+    "asset_guid": "3978559C2D8345D9E04400306E4AD01A",
+    "total_defect_cnt": 62,
+    "open_defect_cnt": 22,
+    "picture_uri": null,
+    "cmi_score": 71,
+    "ve_comp_stat": null,
+    "de_comp_stat": null,
+    "uw_comp_stat": null
+}
+
+https://apim-uks-dev-ces-0001.azure-api.net/II/CESAPI/assets/3978559C2D8345D9E04400306E4AD01A?requestType=getaccessassetdetails
+RES
+{
+    "possession": null,
+    "rrv": null,
+    "ladder": null,
+    "confined_space": null,
+    "3rd_party": null,
+    "line_block": null,
+    "mewp": null,
+    "scaffold": null,
+    "water_permit": null,
+    "traffic_mngt": null,
+    "rope_access": null,
+    "cctv": null,
+    "saftey_boat": null
+}
+https://apim-uks-dev-ces-0001.azure-api.net/II/CESAPI/assets/3978559C2D8345D9E04400306E4AD01A?requestType=getphotometadataassetdetails
+RES
+[{
+    "defect": {
+        "exam_date": "2011-06-10",
+        "exam_type": "Visual",
+        "exam_id": 361831
+    },
+    "img": null
+}, {
+    "defect": {
+        "exam_date": "2011-08-15",
+        "exam_type": "Detailed",
+        "exam_id": 317671
+    },
+    "img": null
+}, {
+    "defect": {
+        "exam_date": "2013-09-25",
+        "exam_type": "Visual",
+        "exam_id": 2376690
+    },
+    "img": null
+}, {
+    "defect": {
+        "exam_date": "2014-09-04",
+        "exam_type": "Visual",
+        "exam_id": 6045906
+    },
+    "img": null
+}, {
+    "defect": {
+        "exam_date": "2015-07-10",
+        "exam_type": "Visual",
+        "exam_id": 7008775
+    },
+    "img": null
+}, {
+    "defect": {
+        "exam_date": "2016-06-24",
+        "exam_type": "Visual",
+        "exam_id": 8014339
+    },
+    "img": null
+}, {
+    "defect": {
+        "exam_date": "2017-06-09",
+        "exam_type": "Detailed",
+        "exam_id": 9019493
+    },
+    "img": null
+}, {
+    "defect": {
+        "exam_date": "2019-05-31",
+        "exam_type": "Visual",
+        "exam_id": 11031935
+    },
+    "img": null
+}, {
+    "defect": {
+        "exam_date": "2020-01-11",
+        "exam_type": "Additional",
+        "exam_id": 2964811
+    },
+    "img": null
+}, {
+    "defect": {
+        "exam_date": "2020-06-21",
+        "exam_type": "Additional",
+        "exam_id": 3013501
+    },
+    "img": null
+}]
+
+SCHEMA:
+{
+    "type": "array",
+    "items": {
+        "required": [
+            "defect",
+            "img"
+        ],
+        "type": "object",
+        "properties": {
+            "defect": {
+                "type": "object",
+                "properties": {
+                    "exam_date": {
+                        "type": "string"
+                    },
+                    "exam_type": {
+                        "type": "string"
+                    },
+                    "exam_id": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "img": {
+                "type": "array",
+                "items": {
+                    "required": [
+                        "img_index",
+                        "img_description",
+                        "img_name",
+                        "img_link"
+                    ],
+                    "type": "object",
+                    "properties": {
+                        "img_index": {
+                            "type": "integer"
+                        },
+                        "img_description": {
+                            "type": "string"
+                        },
+                        "img_name": {
+                            "type": "string"
+                        },
+                        "img_link": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+4.getDefectDetails
+https://apim-uks-dev-ces-0001.azure-api.net/II/CESAPI/assets/defects/assetId
+HEADER:
+[{"key":"X-Defect-Filters","value":"{\"assetGuid\":\"3978559C3D9D45D9E04400306E4AD01A\",\"isOpenDefect\":\"Y\"}","description":""}]
+{
+    "searchdatacount": {
+        "totalcount": 1
+    },
+    "assetdtls": [
+        {
+            "Asset_GUID": "3978559C3D9D45D9E04400306E4AD01A",
+            "region": "Southern",
+            "route": "Kent",
+            "area": "Orpington",
+            "elr": "TTH",
+            "railway_id": "113A",
+            "asset_grp": "Bridge",
+            "asset_type": "Culvert",
+            "owning_party": "Network Rail (Other)"
+        }
+    ],
+    "searchresult": [
+        {
+            "defect_id": "18060",
+            "description": "PNE : Dense vegetation prevents locating.",
+            "location": "Ends of culvert",
+            "loc_major": null,
+            "loc_minor": null,
+            "details": [
+                {
+                    "exam_id": "9031972",
+                    "exam_actual_date": "2017-05-14",
+                    "exam_type": "Visual",
+                    "deterioration": "Baseline",
+                    "risk_score": "6",
+                    "access_granted": "Y",
+                    "access_required": "Y",
+                    "repaired": "N/A",
+                    "closure_flg": "N"
+                },
+                {
+                    "exam_id": "11033774",
+                    "exam_actual_date": "2019-12-12",
+                    "exam_type": "Visual",
+                    "deterioration": "NV",
+                    "risk_score": "8",
+                    "access_granted": "N",
+                    "access_required": "Y",
+                    "repaired": "N",
+                    "closure_flg": "N"
+                }
+            ]
+        }
+    ]
+}
+4.1 defectTracker
+https://apim-uks-dev-ces-0001.azure-api.net/II/CESAPI/assets/defects/{isNewDefect}
+EX:https://apim-uks-dev-ces-0001.azure-api.net/II/CESAPI/assets/defects/Y
+{
+    "exam_type": [{
+        "exam_type_id": 1,
+        "exam_type_val": "Visual"
+    }, {
+        "exam_type_id": 2,
+        "exam_type_val": "Detailed"
+    }, {
+        "exam_type_id": 3,
+        "exam_type_val": "Underwater"
+    }, {
+        "exam_type_id": 4,
+        "exam_type_val": "Additional"
+    }, {
+        "exam_type_id": 5,
+        "exam_type_val": "One-off - Additional"
+    }, {
+        "exam_type_id": 6,
+        "exam_type_val": "One-off - Additional Assess."
+    }, {
+        "exam_type_id": 7,
+        "exam_type_val": "Additional - Assessment"
+    }, {
+        "exam_type_id": 8,
+        "exam_type_val": "Line Of Route"
+    }, {
+        "exam_type_id": 9,
+        "exam_type_val": "Rapid response - Bridge strike"
+    }, {
+        "exam_type_id": 10,
+        "exam_type_val": "Rapid response - Other"
+    }, {
+        "exam_type_id": 11,
+        "exam_type_val": "Reconnaissance"
+    }, {
+        "exam_type_id": 12,
+        "exam_type_val": "Prelim. Advice Notification"
+    }, {
+        "exam_type_id": 13,
+        "exam_type_val": "Additional - Tenanted Arch"
+    }, {
+        "exam_type_id": 14,
+        "exam_type_val": "Enhanced"
+    }, {
+        "exam_type_id": 15,
+        "exam_type_val": "Miscellaneous"
+    }],
+    "defect_id": 23778
+}
+
+5. http://localhost:8048/api/postExamDates
+POST
+HEAD:
+[{"key":"X-Supplier-Id","value":"b7789d1f-defb-4f49-9681-bbea38b8a5e3","description":""}]
+BODY
+[
+	{
+	  "assetGuid": "AA3DF15A-B72D-4A33-B21C-764BD17C3F64",
+	  "examinationType": "Detailed",
+	  "examId": 101,
+	  "plannedExamDate": "22/12/2020",
+	  "actualExamDate": "25/01/2021"
+		
+	}]
+EXPLA:
+self.exam_date_req =[{"assetGuid": "AA3DF15A-B72D-4A33-B21C-764BD17C3F64", "examinationType": "Detailed","examId": 101,"plannedExamDate": "22/12/2020", "actualExamDate": "25/01/2021"}]
+self.exam_date_details_req='[{"assetGuid": "AA3DF15A-B72D-4A33-B21C-764BD17C3F64", "examinationType": "Detailed", "examId": 101, "plannedExamDate": "22/12/2020", "actualExamDate": "25/01/2021"}]'
+sp_param=('[{"assetGuid": "AA3DF15A-B72D-4A33-B21C-764BD17C3F64", "examinationType": "Detailed", "examId": 101, "plannedExamDate": "22/12/2020", "actualExamDate": "25/01/2021"}]','b7789d1f-defb-4f49-9681-bbea38b8a5e3')
+
+0:'[{"assetGuid": "AA3DF15A-B72D-4A33-B21C-764BD17C3F64", "examinationType": "Detailed", "examId": 101, "plannedExamDate": "22/12/2020", "actualExamDate": "25/01/2021"}]'
+1:'b7789d1f-defb-4f49-9681-bbea38b8a5e3'
+
+6.http://localhost:8047/api/accessTaskList
+
+PUT:
+Req:
+{
+	  "examkey": 1,
+	  "plannedExamDate": "29/01/2021",
+	  "actualExamDate": "28/01/2021"
+
+	}
+{'actualExamDate': datetime.date(2021, 1, 28), 'examkey': 1, 'plannedExamDate': datetime.date(2021, 1, 29)}
+
+PUT:
+Request
+[{"examkey": 1,"plannedExamDate": "29/01/2021","actualExamDate": "28/01/2021"}]
+[{'actualExamDate': datetime.date(2021, 1, 28), 'examkey': 1, 'plannedExamDate': datetime.date(2021, 1, 29)}]
+
+0:[{'actualExamDate': '28/01/2021', 'examkey': 1, 'plannedExamDate': '29/01/2021'}]
+1:'A22AF4A1-611E-4C65-B018-287A3B81F873'

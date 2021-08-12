@@ -1,0 +1,120 @@
+Junk
+CKumarS
+$BePositive333
+BePositive@333
+[Monday 11:33 AM] Kumar, Amit (Cognizant)
+    
+10.178.52.70
+Che%8Kum$3arS@449
+​[Monday 11:58 AM] Kumar, Amit (Cognizant)
+    
+server name : sqluksnprdiicesdev0001.database.windows.net
+username : CES_DEV_USER
+Password : o130>O$~7pjM,
+Server name : sqluksnprdiicessit0001.database.windows.net
+Username : CES_SIT_USER
+Password : LjKtIM5fZ#2[g!J
+$erviceNow99
+7093 - Site Performance
+suppliers = self.json_helper.parse_json('{"suppliersMapper":[{"id":"69c5048b-be6b-4e5e-bce8-90d1d1662169","supplierId":"6"},{"id":"b7789d1f-defb-4f49-9681-bbea38b8a5e3","supplierId":"4"},{"id":"b7789d1f-defb-4f49-9681-bbea38b8a5e4","supplierId":"5"}]}')[1]
+
+
+=================================================================================================
+def get_supplier_id(self,supp_id):
+111		Plus          """
+112		Plus          To get the database supplier id 
+113		Plus         
+114		Plus          Args:
+115		Plus              self ([TaskListData]): [self instance]
+116		Plus              Supplier Active directory Id : supp_id        """
+117		Plus          suppliers = self.json_helper.parse_json(os.environ[TaskListDetailsConstants.suppliers_dtls_mapper])[1]
+118		Plus          #suppliers = self.json_helper.parse_json('{"suppliersMapper":[{"id":"69c5048b-be6b-4e5e-bce8-90d1d1662169","supplierId":"6"},{"id":"b7789d1f-defb-4f49-9681-bbea38b8a5e3","supplierId":"4"},{"id":"b7789d1f-defb-4f49-9681-bbea38b8a5e4","supplierId":"5"}]}')[1]
+119		Plus          self.properties['suppliers'] = str(suppliers)
+120		Plus          self.properties['x-supplier-id'] = str(supp_id)
+121		Plus          supplier = next((x for x in suppliers[TaskListDetailsConstants.suppliers_mapper] if x[TaskListDetailsConstants.id] == supp_id), '')
+122		Plus          self.properties['supplier'] = str(supplier)
+123		Plus          self.supplier_id = supplier[TaskListDetailsConstants.supplier_id] if supplier else ''
+124		Plus  
+125		Plus          suppliersnames = self.json_helper.parse_json(os.environ[TaskListDetailsConstants.suppliers_metadata_mapper])[1]
+126		Plus          #suppliersnames = self.json_helper.parse_json('{"suppliersMetaData":[{"id":"1","name":"Atkins Rail"},{"id":"2","name":"Mouchel Parkman Rail"},{"id":"3","name":"Owen Williams Rail"},{"id":"4","name":"Amey Rail"},{"id":"5","name":"Network Rail"},{"id":"6","name":"XEIAD"},{"id":"7","name":"Pell Frischmann"},{"id":"8","name":"AECOM"},{"id":"9","name":"Jacobs"},{"id":"10","name":"QTS"},{"id":"11","name":"Kraven"},{"id":"12","name":"CML"},{"id":"13","name":"AMCO"},{"id":"14","name":"Amey (CAFA)"},{"id":"15","name":"AECOM (CAFA)"},{"id":"16","name":"Other (CAFA)"},{"id":"17","name":"SAS Rope and Rail"},{"id":"18","name":"Inspire"},{"id":"19","name":"GW Marine"},{"id":"20","name":"AK Rates"},{"id":"21","name":"Coombes"},{"id":"22","name":"WSP"}]}')[1]
+127		Plus          suppliername = next((x for x in suppliersnames[TaskListDetailsConstants.suppliers_metadata] if x[TaskListDetailsConstants.id] == self.supplier_id), '')
+128		Plus          self.supplier_name=suppliername[TaskListDetailsConstants.name] if suppliername else ''
+129		Plus          return (self.supplier_name)
+=========================================================================================================
+
+
+
+
+
+
+{"region_name":"Southern","route_id":0,"railway_id": "E4/506#1","is_export_to_doc":"Y"}
+
++++++++++++++++++++++++++
+Hemalatha R
+Fri 7/23/2021 11:48 AM
+Hi,
+
+  PFB credentials for accessing below strategic VM,
+
+
+Services:
+
+ResourceGroup	VM
+res-uks-nprd-ii-sha	az01ppk1001
+az01ppk1002
+az01ppk1003
+az01ppk1004
+
+UserID	Pwd
+Ckumars
+Ck9!uma3#rs@773
+
++++++++++++++++++++++++++++++++++++++++++++++++++
+These are the custom domain configured against APIM in prod : 
+cefa-app-pool >> ces.networkrail.co.uk  -- For UI
+cefa-api-pool >> cesapi.networkrail.co.uk -- For API
+
+
+MyDashBoard
+https://cloud.workhuman.com/microsites/t/profile/UserProfile?personId=14392543
+
+
+    
+PreProd URLs,
+iicefa-pprod.networkrail.co.uk -- UI
+iicefa-api-pprod.networkrail.co.uk -- API
+
+
+https://portal.azure.com/#blade/HubsExtension/BrowseResourceGroups
+https://dev.azure.com/Intelligent-Infrastructure/CEFA%20Enabling%20Solution%20Project/_sprints/taskboard/CEFA%20Enabling%20Solution%20Project%20Team/CEFA%20Enabling%20Solution%20Project/Sprint-UAT
+
+//Mail
+https://owa-networkrail.msappproxy.net/owa/#path=/mail
+https://outlook.office365.com/mail/
+
+
+//code compare
+https://www.diffchecker.com/
+
+code beautify
+https://codebeautify.org/jsonviewer
+
+//PYTHON DESIGN PATTERN
+https://refactoring.guru/design-patterns/python
+//PYTHON PYODBC
+https://github.com/mkleehammer/pyodbc/wiki
+
+PDF EDIT
+https://smallpdf.com/pdf-tools
+
+// AZURE PYTHON FUNCTION
+\https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-python?tabs=application-level
+
+//AZ EXAM
+https://wsr.pearsonvue.com/testtaker/checkout/OrderSummaryPage/MICROSOFT?conversationId=4204102
+
+
+https://docs.microsoft.com/en-us/azure/azure-functions/python-scale-performance-reference
+
+https://prod-08.uksouth.logic.azure.com:443/workflows/1588a00e286447f0b9fdb3c9eeba06e3/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=azP8-eYIOXkQ0g83ihCWcC-0pUOZ8Wc7XdyZqfLIo7g
+https://prod-08.uksouth.logic.azure.com:443/workflows/1588a00e286447f0b9fdb3c9eeba06e3/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=azP8-eYIOXkQ0g83ihCWcC-0pUOZ8Wc7XdyZqfLIo7g

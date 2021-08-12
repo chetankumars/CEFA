@@ -1,0 +1,48 @@
+# This pipeline will do the continous integration of CEFA Angular application which is available in CEFA Enabling Solution project
+# Source Repositiory - CEFA Enabling Solution Project/CES_UI 
+
+name: CES - Angular Application Continous Integration.
+
+resources:
+  repositories: 
+    - repository: CES_UI
+      type: git
+      name: CEFA Enabling Solution Project/CES_UI 
+      ref: develop
+trigger:
+  branches:
+    include:
+    - develop
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- checkout: CES_UI
+
+- task: NodeTool@0
+  displayName: 'Use Node 10.x'
+  inputs:
+    versionSpec: '10.x' 
+
+- script: |
+    npm install -g @angular/cli
+    npm install
+    ng build --prod
+    echo 'working dir ls'
+    ls
+    echo 'working dir ls'
+    cd dist
+    echo 'changing to dist folder'
+    ls
+    echo 'Moving to nr-ii-cefa'
+    cd nr-ii-cefa
+    ls
+    echo 'completed ls'
+  displayName: 'npm install and build $(System.DefaultWorkingDirectory)'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(System.DefaultWorkingDirectory)/dist/nr-ii-cefa'
+    artifactName: BuildArtifact
+

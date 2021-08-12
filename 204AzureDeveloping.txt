@@ -1,0 +1,122 @@
+Here are some official Microsoft websites that you really should bookmark when studying for the AZ-204 exam:
+
+
+
+Learning paths on MS Learn:
+
+https://docs.microsoft.com/en-us/learn/certifications/exams/az-204#two-ways-to-prepare
+
+
+
+Azure Code Samples:
+
+https://azure.microsoft.com/en-us/resources/samples/?sort=0
+
+
+
+Official Azure Documentation:
+
+https://docs.microsoft.com/en-us/azure/
+
+
+
+Official Microsoft Azure YouTube Channel
+
+https://www.youtube.com/user/windowsazure
+
+
+
+Official Microsoft Developer YouTube Channel
+
+https://www.youtube.com/channel/UCsMica-v34Irf9KVTh6xx-g
+
+
+
+Azure REST API Browser
+
+https://docs.microsoft.com/en-us/rest/api/?view=Azure
+
+
+
+Microsoft Labs and Workshops - Practice is the key to success
+
+Azure Citadel - Labs and Workshops
+
+https://azurecitadel.com/
+
+
+
+Microsoft Cloud Workshop - More labs and workshops
+
+https://microsoftcloudworkshop.com/
+
+#204 Exams Answered links
+https://esi.microsoft.com/getcertification
+https://docs.microsoft.com/en-us/azure/cosmos-db/stored-procedures-triggers-udfs
+https://docs.microsoft.com/en-us/azure/cosmos-db/how-to-use-stored-procedures-triggers-udfs
+https://docs.microsoft.com/en-us/azure/cosmos-db/javascript-query-api
+
+
+Use Azure Cache for Redis in .NET Core
+https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-dotnet-core-quickstart
+https://docs.microsoft.com/en-us/dotnet/api/overview/azure/redis-cache?view=azure-dotnet
+
+Introduction to Gremlin API in Azure Cosmos DB
+https://docs.microsoft.com/en-us/azure/cosmos-db/graph-introduction
+
+Create an App Service app and deploy code to a staging environment using Azure CLI
+https://docs.microsoft.com/en-us/azure/app-service/scripts/cli-deploy-staging-environment
+
+Optimize costs by automating Azure Blob Storage access tiers
+https://docs.microsoft.com/en-us/azure/storage/blobs/storage-lifecycle-management-concepts?tabs=azure-portal
+https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-storage-tiers 
+
+Caching
+https://docs.microsoft.com/en-us/azure/architecture/best-practices/caching
+Best practices for Azure Cache for Redis
+https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-best-practices
+
+MICROSOFT CERTIFICATE LOGIN
+https://www.microsoft.com/en-us/learning/dashboard.aspx
+chetankumars.333@gmail.com=Kumar@1988
+Saturday, August 28, 2021 8:30 AM UTC=Exam AZ-204: Developing Solutions for Microsoft Azure
+Saturday, December 4, 2021 8:30 AM UTC=Exam AZ-303: Microsoft Azure Architect Technologies
+Friday, February 18, 2022 7:30 PM UTC=Exam AZ-304: Microsoft Azure Architect Design
+
+chetankumarshivalingaiah
+Saturday, July 31, 2021 7:30 AM UTC=Saturday, September 4, 2021
+Sunday, October 31, 2021 7:30 AM UTC
+Friday, January 7, 2022 6:30 PM UTC
+
+
+#CTS MS TRAINING on 
+7/23/2021 9:00	7/23/2021 13:00	IST Exam Prep AZ-204: Developing Solutions for Microsoft Azure
+https://esi.microsoft.com/Deliveryonly/?delid=31579
+
+AZ-204 Developing Solutions for Microsoft Azure
+Date: Sep 6,7,8,9,10 2021Time:09:00 AM - 05:00 PM Timezone:(GMT+05:30) Chennai, Kolkata, Mumbai, New DelhiLocation:VirtualLanguage:EnglishAvailable Seats:0/40Delivery Id:31389
+VIRTUAL CLASSROOMCopy Link
+https://esi.microsoft.com/Deliveryonly/?delid=31389
+
+AZ-204 Developing Solutions for Microsoft Azure
+Date:Sep 13, 2021 - Sep 17, 2021Time:09:00 AM - 05:00 PM Timezone:(GMT+05:30) Chennai, Kolkata, Mumbai, New DelhiLocation:VirtualLanguage:EnglishAvailable Seats:0/20Delivery Id:31390
+https://esi.microsoft.com/Deliveryonly/?delid=31390
+
+AZ-204 Developing Solutions for Microsoft Azure
+Date: Sep 20,21,22,23,24 2021Time:09:00 AM - 05:00 PM Timezone:(GMT+05:30) Chennai, Kolkata, Mumbai, New DelhiLocation:VirtualLanguage:EnglishAvailable Seats:0/20Delivery Id:31391
+https://esi.microsoft.com/Deliveryonly/?delid=31391
+
+
+Github AZ-104 from Microsoft Training
+https://microsoftlearning.github.io/AZ-104-MicrosoftAzureAdministrator/
+
+##Instructor-led course: AZ-900: Azure Fundamentals
+https://docs.microsoft.com/en-us/learn/browse/
+1.Azure Fundamentals part 1: Describe core Azure concepts
+https://docs.microsoft.com/en-us/learn/paths/az-900-describe-cloud-concepts/
+
+2.Microsoft has a Github page that contains labs for AZ-204:
+https://github.com/MicrosoftLearning/AZ-204-DevelopingSolutionsforMicrosoftAzure
+
+3.AZ-303 Azure Architecture Technologies Exam Prep 2021
+https://www.udemy.com/course/70534-azure/

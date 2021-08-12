@@ -1,0 +1,153 @@
+#test_get_access_task_sql.py
+
+import sys
+import os
+import json
+import unittest
+from unittest import mock
+from unittest.mock import patch, Mock, MagicMock
+import pyodbc
+import pandas
+import simplejson
+from tests.load_environment_variables import EnvironmentVariable
+EnvironmentVariable()
+from accessTaskList.businesslogic.access_task_list import AccessTaskList
+
+
+class AccessTaskListTest(unittest.TestCase):
+
+    @patch('accessTaskList.businesslogic.access_task_list.SqlOperation')
+    def test_return_ok(self, mocked):   
+        mocked_value = ['{"regions":[{"region_id":1,"region_name":"Eastern","routes":[{"route_id":1,"route_name":"Anglia","areas":[{"area_id":null,"area_name":null,"elr":[{"elr_id":null,"elr_code":null}]}]}]}],"asset_groups":[{"asg_id":1,"asg_name":"Ancilliaries","ast":[{"ast_id":13,"ast_name":"Cable Structure"}]}],"oprstats":[{"opstat_id":66,"opstat_name":"Duplicate"}],"ownparty":[{"ownparty_id":1,"ownparty_name":"CTRL"}],"mattyps":[{"mattyp_id":50,"mattyp_name":" RBE - Aluminium"}],"hceflg":[{"hceflg_id":1,"hceflg_name":"Yes"}],"strccarries":[{"strccarries_id":1,"strccarries_name":null}],"strcover":[{"strcover_id":1,"strcover_name":null}]}']
+        mocked.return_value.fetch_one.return_value  = mocked_value
+        req_param = 1
+        req_param_name = "year"
+        instance = AccessTaskList(req_param,req_param_name)
+        response = instance.get_access_task()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get_body(),
+            b'{"regions": [{"region_id": 1, "region_name": "Eastern", "routes": [{"route_id": 1, "route_name": "Anglia", "areas": [{"area_id": null, "area_name": null, "elr": [{"elr_id": null, "elr_code": null}]}]}]}], "asset_groups": [{"asg_id": 1, "asg_name": "Ancilliaries", "ast": [{"ast_id": 13, "ast_name": "Cable Structure"}]}], "oprstats": [{"opstat_id": 66, "opstat_name": "Duplicate"}], "ownparty": [{"ownparty_id": 1, "ownparty_name": "CTRL"}], "mattyps": [{"mattyp_id": 50, "mattyp_name": " RBE - Aluminium"}], "hceflg": [{"hceflg_id": 1, "hceflg_name": "Yes"}], "strccarries": [{"strccarries_id": 1, "strccarries_name": null}], "strcover": [{"strcover_id": 1, "strcover_name": null}]}'
+        )  
+
+
+    @patch('accessTaskList.businesslogic.access_task_list.SqlOperation')
+    def test_return_no_content_When_null_response(self, mocked):
+        mocked_value = None
+        mocked.return_value.fetch_one.return_value  = mocked_value
+        req_param = 1
+        req_param_name = "year"
+        instance = AccessTaskList(req_param,req_param_name)
+        response = instance.get_access_task()
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(
+            response.get_body(),
+            b'{"error": {"types": "Invalid Request", "title": "Header/Param validation failure", "status": 204, "detail": "request parameter is missing", "instance": "AccessTaskList"}}'
+        )  
+   
+    @patch('accessTaskList.businesslogic.access_task_list.SqlOperation')
+    def test_return_no_content_when_invalid_json_response(self, mocked):
+        mocked_value = None
+        mocked.return_value.fetch_one.return_value  = mocked_value
+        req_param = 123
+        req_param_name = "year"
+        instance = AccessTaskList(req_param,req_param_name)
+        response = instance.get_access_task()
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(
+            response.get_body(),
+            b'{"error": {"types": "Invalid Request", "title": "Header/Param validation failure", "status": 204, "detail": "request parameter is missing", "instance": "AccessTaskList"}}'
+        )  
+
+    def test_return_bad_request(self):
+        req_param = None
+        req_param_name = "year"
+        instance = AccessTaskList(req_param,req_param_name)
+        response = instance.get_access_task()
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.get_body(),
+            b'{"error": {"types": "Invalid Request", "title": "Header/Param validation failure", "status": 400, "detail": "request parameter is missing", "instance": "AccessTaskList"}}'
+        )      
+
+
+    def test_return_internal_server_error_exception(self):
+        req_param = 1
+        req_param_name = "year"
+        instance = AccessTaskList(req_param,req_param_name)
+        response = instance.get_access_task()
+        self.assertEqual(response.status_code, 500)        
+        self.assertEqual(
+            response.get_body(),
+            b'{"error": {"types": "<class \'UnboundLocalError\'>", "title": "AccessTaskList", "status": 500, "detail": "local variable \'conn\' referenced before assignment", "instance": "AccessTaskList"}}'
+        )   
+
+if __name__ == '__main__':
+    unittest.main()
+
+
+
+#test_get_access_task_init_.py
+
+import sys
+import os
+import unittest
+from unittest import mock
+from unittest.mock import patch, Mock, MagicMock, create_autospec
+from test.support import EnvironmentVarGuard
+import azure.functions as func
+from tests.load_environment_variables import EnvironmentVariable
+EnvironmentVariable()
+from accessTaskList import main
+
+class AccessTaskListInitTest(unittest.TestCase):
+    
+    @patch('accessTaskList.AccessTaskList')
+    def test_init_return_ok(self, mocked):
+        mocked_value = '{"regions":[{"region_id":1,"region_name":"Eastern","routes":[{"route_id":1,"route_name":"Anglia","areas":[{"area_id":null,"area_name":null,"elr":[{"elr_id":null,"elr_code":null}]}]}]}],"asset_groups":[{"asg_id":1,"asg_name":"Ancilliaries","ast":[{"ast_id":13,"ast_name":"Cable Structure"}]}],"oprstats":[{"opstat_id":66,"opstat_name":"Duplicate"}],"ownparty":[{"ownparty_id":1,"ownparty_name":"CTRL"}],"mattyps":[{"mattyp_id":50,"mattyp_name":" RBE - Aluminium"}],"hceflg":[{"hceflg_id":1,"hceflg_name":"Yes"}],"strccarries":[{"strccarries_id":1,"strccarries_name":null}]}'
+        http_response = func.HttpResponse(status_code=200,body=mocked_value)
+        mocked.return_value.get_access_task.return_value = http_response
+        http_request = func.HttpRequest(
+            method='GET',
+            body=None,
+            url='/accessTaskList', 
+            params={'year': '123'}
+        )
+
+        response = main(http_request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get_body(),
+            b'{"regions":[{"region_id":1,"region_name":"Eastern","routes":[{"route_id":1,"route_name":"Anglia","areas":[{"area_id":null,"area_name":null,"elr":[{"elr_id":null,"elr_code":null}]}]}]}],"asset_groups":[{"asg_id":1,"asg_name":"Ancilliaries","ast":[{"ast_id":13,"ast_name":"Cable Structure"}]}],"oprstats":[{"opstat_id":66,"opstat_name":"Duplicate"}],"ownparty":[{"ownparty_id":1,"ownparty_name":"CTRL"}],"mattyps":[{"mattyp_id":50,"mattyp_name":" RBE - Aluminium"}],"hceflg":[{"hceflg_id":1,"hceflg_name":"Yes"}],"strccarries":[{"strccarries_id":1,"strccarries_name":null}]}',
+        )
+    
+__________________________________________________________________________________________________________-
+import logging
+import azure.functions as func
+from .businesslogic import AccessTaskList
+from .constants.access_task_list_constants import GetAccessTaskListConstants
+from datetime import date 
+from common import SharedConstants
+
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    """[summary]
+
+    Args:
+        req (func.HttpRequest): calling AccessTaskList class to get the access response
+
+    Returns:
+        func.HttpResponse: access task json from CES DB
+    """
+
+
+    # creating the date object of today's date 
+    todays_date = date.today()
+    
+    if req.method == SharedConstants.method_type_get:
+        param_value = req.params.get(GetAccessTaskListConstants.year) if req.params.get(GetAccessTaskListConstants.year) is not None else todays_date.year.__str__()
+        param_value = param_value if param_value.isdigit() else todays_date.year.__str__()
+        response = AccessTaskList(param_value,GetAccessTaskListConstants.year).get_access_task()
+    else:
+        response = AccessTaskList(req.params.get(GetAccessTaskListConstants.supplier_id),GetAccessTaskListConstants.supplier_id).edit_access_task()
+    return response
