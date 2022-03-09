@@ -1,0 +1,56 @@
+requests|where customDimensions has "{SELECT_API}" | summarize  name = "{SELECT_API}" ,totals = count(),successes = countif(customDimensions["status"] == "true"),failures = countif(customDimensions["status"] == "false")
+| project ["Function App"]=name, ["Run Count"]=totals, ["Run Success"]=successes, ["Run Failure"]=failures, Status = iif(failures>0,"❌","✔️")
+
+requests|where customDimensions has "func:fnTaskListAssets" | summarize  name = 'TaskListAssets' ,totals = count(),successes = countif(customDimensions.status == "true"),failures = countif(customDimensions.status == "false")
+| project ["Function App"]=name, ["Run Count"]=totals, ["Run Success"]=successes, ["Run Failure"]=failures, Status = iif(failures>0,"❌","✔️")
+
+
+### <span >*{SUCCESS}*</span> <span >Records for </span></b>  <span >*{TimeRange}* </span>
+
+requests| where customDimensions has "func:getWorkOrderList"
+|project ['Message Id'] = id ,Time = timestamp ,['SP Req Time'] = customDimensions.sprequeststart_time,['SP Resp Time'] = customDimensions.sprequestend_time, ['SP Execution Time'] = datetime_diff('second',todatetime(customDimensions.sprequestend_time),todatetime(customDimensions.sprequeststart_time)),['Function Req Time'] = customDimensions.start_time,['Function Resp Time'] = customDimensions.end_time, ['Function Execution Time'] = datetime_diff('second', todatetime(customDimensions.end_time),todatetime(customDimensions.start_time)),["Transaction Status"]=  iif(customDimensions["status"]=="true","✔️","❌")| order by Time
+
+datatable(key:string)
+[
+"func:getWorkOrderList",
+"func:assetSearches",
+"func:getAsset",
+"func:getAssetHierarchy",
+"func:getAssetOverviewDetail",
+"func:getChildAssetHierarchy",
+"func:getExtent",
+"func:getFormReferenceData",
+"func:getGeocoordinates",
+"func:getLayerExtent",
+"func:getLegendData",
+"func:getOrganizationData",
+"func:getReferenceCode",
+"func:getReferenceData",
+"func:getReferenceHierarchies",
+"func:getTraceDrainageData",
+"func:getUserFilterDetails",
+"func:getWorkOrderDetails",
+"func:getWorkOrderFilter",
+"func:getAssetList",
+"func:retrieveInvestigations",
+"func:retrieveRemediationDetails",
+"func:saveFilterDetails",
+"func:saveInvestigationDetails",
+"func:saveRemediationDetails",
+"func:updateRejectWODetails",
+"func:updateWorkOrderStatus",
+"func:validateFBFormName",
+"func:workOrderActivityLog"
+]
+
+
+let View_1 = view () { print Type="true" };
+let View_2 = view () { print Type="false" };
+union isfuzzy=true View*
+
+### <span >*{SUCCESS}*</span> <span >Records for </span></b>  <span >*{TimeRange}* </span>
+
+datatable(key:string,display:string)
+[
+"id", "Message Id" 
+]
