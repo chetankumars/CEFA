@@ -1,0 +1,419 @@
+
+import sys
+import os
+import pandas as pd
+import pyodbc
+import urllib
+import sqlalchemy
+sys.path.insert(0,os.getcwd())
+import logging
+import os
+from ..constants import SharedConstants
+from tenacity import *
+import requests  as req
+from ..patterns import Singleton
+import traceback
+from .data_helper import OAuth
+import psycopg2
+import psycopg2.extras
+import itertools
+__all__ = ['SqlOperation']
+
+connectionpool =  ''
+params = ''
+_sql_connection_string=''
+
+def get_db_connectionstring():
+    '''
+        Constructing connection string for pooling
+    '''
+    try:
+        engine = sqlalchemy.create_engine("mssql+pyodbc:///?odbc_connect=%s" % params, pool_size=10)
+        logging.info("sqlalchemy engine created")
+        return engine.connect().connection
+    except:
+        retmsg = 'Error - Error Info Exception occured while creating engine:' +  str(sys.exc_info()) + str(traceback.format_exc())
+        logging.error(f"{retmsg}")
+        logging.error("retrying again")
+        raise(req.exceptions.InvalidSchema)
+
+class SqlOperation():
+    
+    def __init__(self,connectionStringKey, autoCloseConnection = True,isMSI:bool = False,autoCommit=True,isPostGreSQL=False):
+        """[summary]
+
+        Args:
+            autoCloseConnection (str, optional): [description]. Defaults to 'autoCloseConnection'.
+        """
+        try:
+            
+            global _sql_connection_string
+            _sql_connection_string = connectionStringKey
+            global  params
+            params = urllib.parse.quote_plus(_sql_connection_string)
+            # connectionString = os.environ[connectionStringKey]
+            #global connectionpool
+            #connectionpool = sqlalchemy.pool.QueuePool(get_db_connectionstring, max_overflow=15, pool_size=5)
+            #logging.info("connection/cursor is opened")
+            #self.sqlConnection = connectionpool.connect()
+            # -The code goes here
+            if isMSI:
+                oauth = OAuth()
+                token = oauth.buildTokenStruct(oauth.getToken(os.environ[SharedConstants.sql_resource_uri]))
+                self.sqlConnection = pyodbc.connect(_sql_connection_string, autocommit = autoCommit, attrs_before = { 1256:bytearray(token) })
+                self.sqlCursor = self.sqlConnection.cursor()
+            elif isPostGreSQL:
+                self.sqlConnection = psycopg2.connect(_sql_connection_string)
+                self.sqlCursor = self.sqlConnection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            else:
+                self.sqlConnection = pyodbc.connect(_sql_connection_string, autocommit = autoCommit)
+                self.sqlCursor = self.sqlConnection.cursor()
+            self.__autoCloseConnection = autoCloseConnection   
+        except pyodbc.OperationalError:
+            retmsg = 'Error - Error Info :' +  str(sys.exc_info()) + str(traceback.format_exc())
+            logging.error(f"{retmsg}")
+            raise(pyodbc.OperationalError)      
+        except Exception as err:
+            retmsg = 'Error - Error Info :' +  str(sys.exc_info()) + str(traceback.format_exc())
+            logging.error(f"{retmsg}")
+            raise err
+
+    def fetch_one(self,tsql:str, params= None,autoCloseConnection = False)-> str:
+        """[summary]
+
+        Args:
+            tsql (str): [sql query]
+
+        Returns:
+            list: [return list]
+        """
+        response = str({})
+        self.__autoCloseConnection = autoCloseConnection
+        try:
+            if params is None:
+                data = self.sqlCursor.execute(tsql) 
+            else:
+                data = self.sqlCursor.execute(tsql,params)
+            logging.info("stored procedure is executed")
+            if data.description is not None:
+                response = data.fetchone()
+                logging.info("response from db received")
+        except pyodbc.OperationalError:
+            self.__autoCloseConnection = True
+            retmsg = 'Error - Error Info :' +  str(sys.exc_info()) + str(traceback.format_exc())
+            logging.error(f"{retmsg}")
+            raise(pyodbc.OperationalError)      
+        except Exception as err:
+            self.__autoCloseConnection = True
+            retmsg = 'Error - Error Info :' +  str(sys.exc_info()) + str(traceback.format_exc())
+            logging.error(f"{retmsg}")
+            raise err
+        
+        finally:
+            if(self.__autoCloseConnection): 
+                self.closeConnections()
+                logging.info("fetch_one connection is closed")
+            else:
+                logging.info("connection is not valid and retrying")
+                raise(pyodbc.OperationalError)
+
+        return response    
+    
+    def fetch_all(self,tsql:str, params= None,autoCloseConnection = False)-> str:
+        """[summary]
+
+        Args:
+            tsql (str): [sql query]
+
+        Returns:
+            list: [return list]
+        """
+        response = str({})
+        self.__autoCloseConnection = autoCloseConnection
+        try:
+            if params is None:
+                data = self.sqlConnection.execute(tsql) 
+            else:
+                data = self.sqlConnection.execute(tsql,params)
+            if data.description is not None:
+                response = data.fetchall()
+            
+        except Exception as err:
+            self.__autoCloseConnection = True
+            retmsg = 'Error - Error Info :' +  str(sys.exc_info()) + str(traceback.format_exc())
+            logging.error(f"{retmsg}")
+            raise err
+        
+        finally:
+            if(self.__autoCloseConnection): 
+                self.closeConnections()
+                logging.info("fetch_all connection is closed")
+            else:
+                logging.info("connection is not valid and retrying")
+                raise(pyodbc.OperationalError)
+
+        return response 
+
+    def fetch_allCursor(self,tsql:str, params= None,autoCloseConnection = False)-> str:
+        """[summary]
+
+        Args:
+            tsql (str): [sql query]
+
+        Returns:
+            list: [return list]
+        """
+        response = str({})
+        self.__autoCloseConnection = autoCloseConnection
+        try:
+            if params is None:
+                data = self.sqlCursor.execute(tsql) 
+            else:
+                data = self.sqlCursor.execute(tsql,params)
+            response = self.sqlCursor.fetchall()
+            
+        except Exception as err:
+            self.__autoCloseConnection = True
+            retmsg = 'Error - Error Info :' +  str(sys.exc_info()) + str(traceback.format_exc())
+            logging.error(f"{retmsg}")
+            raise err
+        
+        finally:
+            if(self.__autoCloseConnection): 
+                self.closeConnections()
+                logging.info("fetch_all connection is closed")
+            else:
+                logging.info("connection is not valid and retrying")
+                raise(pyodbc.OperationalError)
+
+        return response  
+
+    def fetchValue(self, query, params=None,autoCloseConnection = False):
+        """Fetch a value from the DB
+        Args:
+            query (str). the SQL query that needs to be executed
+            params (tuple). the query param if any. (defaults to None)
+        return:  value
+        """
+        self.__autoCloseConnection = autoCloseConnection
+        try:
+            returnVal = self.sqlCursor.execute(query, params or ()).fetchval()
+            logging.info("returnVal is executed")
+            return returnVal
+        except pyodbc.OperationalError:
+            self.__autoCloseConnection = True
+            retmsg = 'Error - Error Info :' +  str(sys.exc_info()) + str(traceback.format_exc())
+            logging.error(f"{retmsg}")
+            raise(pyodbc.OperationalError)      
+        except Exception as err:
+            self.__autoCloseConnection = True
+            retmsg = 'Error - Error Info :' +  str(sys.exc_info()) + str(traceback.format_exc())
+            logging.error(f"{retmsg}")
+            raise err
+        finally:
+            if(self.__autoCloseConnection): 
+                self.closeConnections()  
+                logging.info("fetchValue connection is closed")
+        return None
+    
+    def fetchAsDataframe(self, query, queryParams = None,autoCloseConnection = False):
+        """Fetch the DB results in the form of a pandas Dataframe
+        Args:
+            query (str). the SQL query that needs to be executed
+            queryParams (tuple). the query param if any. (defaults to None)
+        return: (pandas.DataFrame)
+        """
+        self.__autoCloseConnection = autoCloseConnection
+        try:
+            dataframe = pd.read_sql(sql = query, con = self.sqlConnection, params = queryParams)
+            logging.info("fetchAsDataframe is executed")
+            return dataframe
+        except pyodbc.OperationalError:
+            self.__autoCloseConnection = True
+            retmsg = 'Error - Error Info :' +  str(sys.exc_info()) + str(traceback.format_exc())
+            logging.error(f"{retmsg}")
+            raise(pyodbc.OperationalError)      
+        except Exception as err:
+            self.__autoCloseConnection = True
+            retmsg = 'Error - Error Info :' +  str(sys.exc_info()) + str(traceback.format_exc())
+            logging.error(f"{retmsg}")
+            raise err
+        finally:
+            if(self.__autoCloseConnection) : 
+                self.closeConnections()
+                logging.info("fetchAsDataframe connection is closed")
+    
+    def fetchAsDictionary(self, query, queryParams = None,autoCloseConnection = False):
+        """Fetch the DB results in the form of a python dictionary
+        Args:
+            query (str). the SQL query that needs to be executed
+            queryParams (tuple). the query param if any. (defaults to None)
+        return: (dict)
+        """
+        self.__autoCloseConnection = autoCloseConnection
+        try:
+            dataframe = pd.read_sql(sql = query, con = self.sqlConnection, params = queryParams)
+            logging.info("fetchAsDictionary is executed")
+            return dataframe.to_dict("records")
+        except pyodbc.OperationalError:
+            self.__autoCloseConnection = True
+            retmsg = 'Error - Error Info :' +  str(sys.exc_info()) + str(traceback.format_exc())
+            logging.error(f"{retmsg}")
+            raise(pyodbc.OperationalError)      
+        except Exception as err:
+            self.__autoCloseConnection = True
+            retmsg = 'Error - Error Info :' +  str(sys.exc_info()) + str(traceback.format_exc())
+            logging.error(f"{retmsg}")
+            raise err
+        finally:
+            if(self.__autoCloseConnection) : 
+                self.closeConnections()
+                logging.info("fetchAsDictionary connection is closed")
+
+    def fetchAsDictionaryCursor(self, spQuery, params=None,autoCloseConnection = False):
+        self.__autoCloseConnection = autoCloseConnection
+        try:
+            result= self.sqlCursor.execute(spQuery, params or ()).fetchall()
+            rowCount=len(result)
+            dictionary = [dict(zip([key[0] for key in self.sqlCursor.description], row)) for row in result]
+            if rowCount==0:
+                return {}
+            if not rowCount > 1:
+                 return tuple(dictionary)[0]
+            return dictionary
+        except pyodbc.Error as err:
+            self.__autoCloseConnection = True
+            logging.error(f"Query failed to execute: {spQuery}, Error: {err}")
+            raise err
+        except Exception as err:
+            self.__autoCloseConnection = True
+            logging.error(f"Query failed to execute: {spQuery}, Error: {err}")
+            raise err
+        finally:
+            if(self.__autoCloseConnection) : 
+                self.closeConnections()
+                logging.info("fetchAsDictionaryCursor connection is closed")
+
+    def fetchCursorNextResultSet(self,autoCloseConnection = False,isArray=False):
+        self.__autoCloseConnection = autoCloseConnection
+        try:
+            self.sqlCursor.nextset()
+            result = self.sqlCursor.fetchall()
+            rowCount=len(result)
+            dictionary = [dict(zip([key[0] for key in self.sqlCursor.description], row)) for row in result]
+            if rowCount==0:
+                return {}
+            if not rowCount > 1 and not isArray:
+                 return tuple(dictionary)[0]
+            return dictionary            
+        except pyodbc.Error as err:
+            self.__autoCloseConnection = True
+            logging.error(f"Query failed to execute, Error: {err}")
+            raise err
+        except Exception as err:
+            self.__autoCloseConnection = True
+            logging.error(f"Query failed to execute, Error: {err}")
+            raise err
+        finally:
+            if(self.__autoCloseConnection) : 
+                self.closeConnections()
+                logging.info("fetchCursorNextResultSet connection is closed")
+
+    def fetchCursorNextResultFechOne(self,autoCloseConnection = False,isArray=False):
+        self.__autoCloseConnection = autoCloseConnection
+        try:
+            self.sqlCursor.nextset()
+            result = self.sqlCursor.fetchone()
+            return result            
+        except pyodbc.Error as err:
+            self.__autoCloseConnection = True
+            logging.error(f"Query failed to execute, Error: {err}")
+            raise err
+        except Exception as err:
+            self.__autoCloseConnection = True
+            logging.error(f"Query failed to execute, Error: {err}")
+            raise err
+        finally:
+            if(self.__autoCloseConnection) : 
+                self.closeConnections()
+                logging.info("fetchCursorNextResultSet connection is closed")
+
+    def fetchAllWithNextSet(self,tsql:str, params= None,autoCloseConnection = False)-> str:
+        self.__autoCloseConnection = autoCloseConnection
+        response = str({})
+        responseList = []
+        try:
+            data = self.sqlConnection.execute(tsql,params)
+            
+            if data.description is not None:
+                response = data.fetchall()
+                responseList.append(response)
+
+                while (data.nextset()):
+                    response = data.fetchall()
+                    responseList.append(response)
+        except:
+            retmsg = 'Error :' +  str(sys.exc_info())
+            logging.error(f"{retmsg}")
+            raise
+        
+        finally:
+            self.closeConnections()
+
+        return responseList
+
+    def fetchAsColumnList(self, query, queryParams = None, jsonIndent = 3,autoCloseConnection = False):
+        """Fetch the DB results in the form of a JSON
+        Args:
+            query (str). the SQL query that needs to be executed
+            queryParams (tuple). the query param if any. (defaults to None)
+            json_indent (int). the indentation of the JSON format (defaults to 2)
+        return: json (str)
+        """
+        self.__autoCloseConnection = autoCloseConnection
+        try:
+            result= self.sqlCursor.execute(query, queryParams or ()).fetchall()
+            out = list(itertools.chain(*result))
+            rowCount=len(result)
+            if rowCount==0:
+                return {}
+            return out
+        except Exception as err:
+            self.__autoCloseConnection = True
+            retmsg = 'Error - Error Info :' +  str(sys.exc_info()) + str(traceback.format_exc())
+            logging.error(f"{retmsg}")
+            raise err
+        finally:
+            if(self.__autoCloseConnection) : 
+                self.closeConnections()
+                logging.info("fetchAsColumnList connection is closed")
+
+    def fetchAsColumnListNextResultSet(self,autoCloseConnection = False):
+        self.__autoCloseConnection = autoCloseConnection
+        try:
+            self.sqlCursor.nextset()
+            result = self.sqlCursor.fetchall()
+            rowCount=len(result)
+            out = list(itertools.chain(*result))
+            rowCount=len(result)
+            if rowCount==0:
+                return {}
+            return out 
+        except pyodbc.Error as err:
+            self.__autoCloseConnection = True
+            logging.error(f"Query failed to execute, Error: {err}")
+            raise err
+        except Exception as err:
+            self.__autoCloseConnection = True
+            logging.error(f"Query failed to execute, Error: {err}")
+            raise err
+        finally:
+            if(self.__autoCloseConnection) : 
+                self.closeConnections()
+                logging.info("fetchAsColumnListNextResultSet connection is closed")
+
+
+    def closeConnections(self):
+        self.sqlCursor.close()
+        self.sqlConnection.close()
+
