@@ -1,0 +1,339 @@
+%run /Shared/Signalling_Predict_and_Prevent/Common/Connections/PNP_Mount_ADLS
+%run ./1.Load_Data_And_Construct_Traces
+
+=====================================================================
+LOAD BLOB STORAGE DATA
+storage_account_name="geoserverefs"
+storage_account_key="NzhEbRRTQP2/BkOslcKItatMN1+6mQ8HbbZtvqOs93Ipm3WRy59sfC/Q7Mn0b/XG3lDjB6b4SCvIVjZ5AQWPZg=="
+container="myworkcontainer"
+spark.conf.set(f"fs.azure.account.key.{storage_account_name}.blob.core.windows.net",storage_account_key)
+dbutils.fs.ls(f"wasbs://{container}@{storage_account_name}.blob.core.windows.net/")
+
+%fs ls wasbs://myworkcontainer@geoserverefs.blob.core.windows.net/
+
+%fs mounts
+
+%fs
+ls /mnt/OPASRaw/OracleData
+
+file_location1 = "wasbs://myworkcontainer@geoserverefs.blob.core.windows.net/DU/AA_MDM_Ipswich/config.gpkg"
+df1 = spark.read.format("csv").load(file_location1)
+display(df1)
+
+storage_account_name="storagejyodemo"
+storage_account_key="jDyMpTLzWKwEDX1tvqfFSbPWXXwhXJX1hUKVswQwRdzikiQAgLXnwb7Xkt6120ZTisQrmtx32lND+AStf1HyNw=="
+container="myworkcontainer"
+spark.conf.set(f"fs.azure.account.key.{storage_account_name}.blob.core.windows.net",storage_account_key)
+file_location2 = "wasbs://myworkcontainer@storagejyodemo.blob.core.windows.net/asset.csv"
+df2 = spark.read.format("csv").option("header","true").load(file_location2)
+#df2=spark.read.parquet(file_location2)
+display(df2)
+
+
+
+df2.createOrReplaceTempView("Companies")
+
+v_sql=''' select * from Companies where _c3=1'''
+df_union_data1=sqlContext.sql(v_sql)
+display(df_union_data1)
+--or--
+v_sql = spark.sql("SELECT * FROM Companies where _c3=1")
+display(v_sql)
+
+df_final_account_Full1=spark.sql("select Name,case when BillingStreet='.' or BillingStreet='0' then NULL else BillingStreet End as BillingStreet,case when BillingCity='' then  NULL when ((BillingCity regexp '^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$')='true') then NULL Else BillingCity End as BillingCity,case when BillingState like '%@%' then NULL when ((BillingState regexp '^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$')='true') THEN NULL when ((BillingState regexp '^[0-9]{1,3}')='true') then regexp_replace(BillingState,'[^A-Za-z.,]','') else BillingState end as BillingState,CASE WHEN BillingPostalCode='0' THEN NULL ELSE BillingPostalCode END AS BillingPostalCode ,BillingCountry, Phone,case when (BillingState like '%@%') then concat('BillingState: ',BillingState,' ',Notes__c) when ((BillingState regexp '^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$')='true' and (BillingCity regexp '^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$')='true') then concat('BillingCity:',BillingCity,' ','BillingState: ',BillingState,' ',Notes__c) when ((BillingState regexp '^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$')='true') then concat('BillingState: ',BillingState,' ',Notes__c) when ((BillingCity regexp '^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$')='true') then concat('BillingCity: ',BillingCity,' ',Notes__c) when ((BillingState regexp '^[0-9]{1,3}')='true') then concat('BillingState: ',regexp_replace(BillingState,'[^0-9 ]',''),' ',Notes__c) else Notes__c End as  Notes__c,External_Id__c, ContactEmail__c,TradingAs__c ,  RecordType, Alternative_Name__c,Service_Territory__c, RecordTypeID from Account_Full ") 
+
+--------------------
+df1 = spark.createDataFrame([[1, "Wester Hailes Stn - Mange 0207/08 Part 01"]],["ID", "Name"])
+display(df1)
+df1.createOrReplaceTempView("df1")
+
+%sql
+select Name, substr(Name,charindex('- ', (Name))+1,100), charindex(' ',trim(substr(Name,charindex('- ', (Name))+1,100))) from df1
+
+----------------------------
+
+df_parquet = spark.read.format("csv").option("header","true").load(file_WPE_COMPANIES)
+display(df_parquet)
+curatedPath = "/FileStore/df/MORECS.parquet"
+#df= spark.read.option("header","true").option("delimeter"," ").csv(file_WPE_COMPANIES)
+df_parquet.write.mode("overwrite").parquet(curatedPath)
+
+df_MADR_Temp = spark.read.csv("/FileStore/df/Asset.csv")
+display(df_MADR_Temp)
+
+df=spark.read.option("multiline", "true").json("nrw_station.json")
+
+df_parquet=spark.read.parquet(curatedPath)
+display(df_parquet)
+
+-------------------------------------
+
+
+
+
+
+
+===================================================================================================================================================================================
+df_MADR_Temp = spark.read.csv("/FileStore/df/Asset.csv")
+df_MADR_Temp.show()
+
+&&&&&&&&&&&&&&&&
+jdbcHostname = "sqluksnprdiidevshd6001.database.windows.net" 
+jdbcDatabase = "sdbuksnprdiidevfms6001"
+jdbcPort = 1433
+connectionProperties = {
+  "user" : "svcdevfms6001",
+  "password" : "IIProgramme@236"
+  }
+jdbcUrl = "jdbc:sqlserver://{0}:{1};database={2}".format(jdbcHostname, jdbcPort, jdbcDatabase)
+
+pushdown_query = " (SELECT * FROM mywork.WORK_ORDER_T) a"
+df_Asset_Hier = spark.read.jdbc(url=jdbcUrl, table=pushdown_query, properties=connectionProperties)
+
+
+df_Asset_Hier.show()
+
+
+==================================================
+PostGreSQL
+import psycopg2
+def getPGSQLConnection(db_conn_data):
+    conn = psycopg2.connect(db_conn_data)
+    conn.autocommit = True
+    cur = conn.cursor()
+    print('PostgreSQL database version:')
+    cur.execute('SELECT version()')
+    db_version = cur.fetchone()
+    print(db_version)
+    cur.close()
+    return conn
+
+pgSqlServerConnection = getPGSQLConnection("host=pgduksnprdiimwmdev0001.postgres.database.azure.com port=5432 dbname=postgres user=dev_pguser@pgduksnprdiimwmdev0001 password=IIProgramme@654")
+pgSqlServerCursor = pgSqlServerConnection.cursor()
+
+
+==========================================================================================================================================
+NoteBook1:My NoteBook 
+%run /Shared/GEOTECH/WSP_ICD/FOUNDATION_CONFIG
+
+from pyspark.sql.functions import date_format
+from pyspark.sql.types import *
+from pyspark.sql.functions import *
+
+rawPath = "/mnt/icdraw/weather/"
+
+df=spark.read.option("multiline", "true").json(rawPath+"metoffice_nswws.json")
+
+try:
+  if isinstance(df.select("feed.entry").schema["entry"].dataType, ArrayType):
+    df1=df.select("feed.entry").select(explode("entry")).select("col.*").select("link.@href")
+  elif isinstance(df.select("feed.entry").schema["entry"].dataType, StructType):
+    df1=df.select("feed.entry").select("entry.link.@href")
+  finaldf = df1.withColumnRenamed("@href","href")
+  finaldf.write.jdbc(AnalyticsUrl, "AZ_ADT.METOFFICE_ENTRY", mode="overwrite",properties=AnalyticsConnectionProperties)
+except Exception as e:
+    if 'java.io.FileNotFoundException' in str(e):
+      print('Event Files does not exists')
+    else:
+      print(str(e))
+
+NoteBook2: /Shared/GEOTECH/WSP_ICD/FOUNDATION_CONFIG
+
+###### Connection to Analytics Database from Azure Databricks ######
+
+AnalyticsHostname = dbutils.secrets.get(scope = "kv-secret-wsp", key = "foundation-hostname")
+AnalyticsDatabase = "Foundation"
+AnalyticsPort = 1433
+
+password = dbutils.secrets.get(scope = "kv-secret-wsp", key = "WSP-FOUNDATION-DBUSER")
+
+AnalyticsUrl = "jdbc:sqlserver://{0}:{1};database={2}".format(AnalyticsHostname, AnalyticsPort, AnalyticsDatabase)
+AnalyticsConnectionProperties = {
+ "user" : "WSP_FOUNDATION_DBUSER",
+ "password" : password,
+ "driver" : "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+ }
+==============================================================================================
+READ ABD WRITE
+from pyspark.sql.functions import date_format
+from pyspark.sql.functions import *
+spark.read.format(file_type).option("header","true").load(file_location_raw+batch+"/"+parameter+"/observed/"+time).withColumn("validdate_H",  date_format(col("validdate"), "HH")).write.format("parquet").mode("overwrite").partitionBy("validdate_H").save(file_location_curated+batch+"/"+parameter+"/observed/"+time)
+
+df1 = df.withColumnRenamed(parameter+':'+unit, "RESULTVALUE").withColumnRenamed("lat", "LATITUDE").withColumnRenamed("lon", "LONGITUDE").withColumnRenamed("validdate", "RESULTDATETIME")
+
+
+
+===================================================================================================
+CREATE GEOPACKAGE FILE WORKING
+CMD1
+import os
+os.listdir('/dbfs/gpkgs')
+
+CMD2
+import osgeo
+from osgeo import gdal
+driver_list = []
+for i in range(gdal.GetDriverCount()):
+    driver = osgeo.gdal.GetDriver(i)
+    driver_list.append(driver.GetDescription())
+
+# list comprehension
+driver_list = [osgeo.gdal.GetDriver(i).GetDescription() for i in range(gdal.GetDriverCount())]
+
+print(driver_list)
+
+# to get name as string
+print(gdal.GetDriver(i).ShortName)
+
+CMD3
+
+sql = "select TOP(1) A.[D_ASSET_KEY] AS D_ASSET_KEY ,A.[EQUIP_NO] AS EQUIP_NO ,A.[EQUIPMENT_GROUP_IDENTIFIER] AS EQUIPMENT_GROUP_IDENTIFIER ,A.[EQUIP_EGI_TYPE] AS EQUIP_EGI_TYPE ,A.[EQUIPMENT_STATUS] AS EQUIPMENT_STATUS ,A.[EQUIPMENT_CLASS_DESC] AS EQUIPMENT_CLASS_DESC ,A.[EQUIPMENT_TYPE] AS EQUIPMENT_TYPE ,A.[SERIAL_NUMBER] AS SERIAL_NUMBER ,A.[PURCHASE_PRICE] AS PURCHASE_PRICE ,A.[COMP_CODE] AS COMP_CODE ,A.[PART_NO] AS PART_NO ,A.[EQUIPMENT_LOCATION] AS EQUIPMENT_LOCATION ,A.[PURCHASE_DATE] AS PURCHASE_DATE ,A.[WARRANTY_DATE] AS WARRANTY_DATE ,A.[PARENT_ASSET] AS PARENT_ASSET ,A.[CONDITION_RATING] AS CONDITION_RATING ,A.[INTERLOCKING_NAME] AS INTERLOCKING_NAME ,A.[ITEM_NAME_CODE_DESC] AS ITEM_NAME_CODE_DESC ,A.[ITEM_NAME_CODE] AS ITEM_NAME_CODE ,A.[LABOUR_COSTING_ALLOWED] AS LABOUR_COSTING_ALLOWED ,A.[DELIVERY_UNIT] AS DELIVERY_UNIT ,A.[EXTERNAL_OWNERSHIP] AS EXTERNAL_OWNERSHIP ,A.[ASSET_NAME] AS ASSET_NAME ,A.[ASSET_TYPE] AS ASSET_TYPE ,A.[LOCAL_NAME] AS LOCAL_NAME ,A.[LOCAL_NAME_2] AS LOCAL_NAME_2 ,A.[MAINTAINER] AS MAINTAINER ,A.[MAINTENANCE_ENGINEER] AS MAINTENANCE_ENGINEER ,A.[SECTION_MANAGER] AS SECTION_MANAGER ,A.[TRACK_ID_REFERENCE] AS TRACK_ID_REFERENCE ,A.[EQUIP_COLLOQUIALS] AS EQUIP_COLLOQUIALS ,A.[YEAR_OF_INSTALLATION] AS  YEAR_OF_INSTALLATION ,A.[YEAR_OF_MANUFACTURE] AS  YEAR_OF_MANUFACTURE ,A.[ON_SITE_VER_DATE] AS  ON_SITE_VER_DATE ,A.[POSITION] AS  POSITION ,A.[ROUTE_ORIENTATION] AS  ROUTE_ORIENTATION ,A.[ACTIVE_ROW_FLAG] AS  ACTIVE_ROW_FLAG ,A.[ERROR_FLAG] AS  ERROR_FLAG ,A.[ELR] AS  ELR ,A.[START_YARDAGE] AS  START_YARDAGE ,A.[END_YARDAGE] AS  END_YARDAGE ,A.[EQUIP_GRP_HIERARCHY] AS  EQUIP_GRP_HIERARCHY ,A.[PARENT_EQUIP_HIERACHY] AS  PARENT_EQUIP_HIERACHY ,A.[EQUIPMENT_HIER_INFO] AS  EQUIPMENT_HIER_INFO ,A.[CYCLE] AS  CYCLE ,A.[HIER_LEVEL] AS  HIER_LEVEL ,A.[EASTING] AS  EASTING ,A.[NORTHING] AS  NORTHING ,A.[MANUFACTURER] AS  MANUFACTURER ,A.[SCDESIGN] AS SCDESIGN ,A.[INCLINEDVERT] AS  INCLINEDVERT ,A.[CROSSPRES] AS  CROSSPRES ,A.[ROUTE] AS  ROUTE ,A.[EQUIPMENT_CLASS] AS  EQUIPMENT_CLASS ,A.[ASSET_CATEGORY] AS  ASSET_CATEGORY ,A.[ASSET_CATEGORY_DESC] AS  ASSET_CATEGORY_DESC from ADS_DM.DIM_ASSET A right JOIN ADS_DM.DRAINAGE_ASSETS_GEOM B ON A.EQUIP_NO = B.equip_no"
+
+main(["","-f", "GPKG","-append","asset.gpkg","MSSQL:DRIVER={ODBC Driver 17 for SQL Server};SERVER=sqluksnprdiidevshd6001.database.windows.net;PORT=1433;DATABASE=Datamart;UID=Ellipse_APM_User;PWD=IIProgramme@345!", "-sql",sql,"-nln","Asset"])
+
+
+CMD4
+import geopandas as gpd
+from shapely.geometry import Point
+
+jdbcHostname = "sqluksnprdiidevshd6001.database.windows.net" 
+jdbcDatabase = "Datamart"
+jdbcPort = 1433
+connectionProperties = {
+  "user" : "Ellipse_APM_User",
+  "password" : "IIProgramme@345!"
+  }
+jdbcUrl = "jdbc:sqlserver://{0}:{1};database={2}".format(jdbcHostname, jdbcPort, jdbcDatabase)
+
+pushdown_query = " (select top(5) A.[ASSET_CATEGORY] AS ASSET_CATEGORY ,A.[ASSET_CATEGORY_DESC] AS ASSET_CATEGORY_DESC,B.[GEOM].STX AS LON,B.[GEOM].STY AS LAT from ADS_DM.DIM_ASSET A LEFT JOIN ADS_DM.DRAINAGE_ASSETS_GEOM B ON A.EQUIP_NO = B.equip_no where B.geom is not null ) a "
+df_Asset_Hier = spark.read.jdbc(url=jdbcUrl, table=pushdown_query, properties=connectionProperties)
+df = df_Asset_Hier.toPandas()
+geometry = [Point(xy) for xy in zip(df.LON, df.LAT)]
+df = df.drop(['LON', 'LAT'], axis=1)
+gdf = gpd.GeoDataFrame(df, crs="EPSG:27700", geometry=geometry)
+display(gdf)
+
+gdf.to_file('/dbfs/gpkgs/asset_4.geojson', driver='GeoJSON')
+main(["","-f", "GPKG",'-append','/dbfs/gpkgs/asset_1.gpkg','/dbfs/gpkgs/asset_1.geojson','-nln','Asset','-skipfailures'])
+
+print(dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get())
+
+gdf.to_file("asset_16.gpkg", layer='countries', driver="GPKG")
+
+
+from azure.storage.blob import BlobServiceClient, PublicAccess,BlobClient
+blob_client = BlobClient('https://geoserverefs.blob.core.windows.net/',container_name = 'test',blob_name = 'asset_2.gpkg',credential= 'NzhEbRRTQP2/BkOslcKItatMN1+6mQ8HbbZtvqOs93Ipm3WRy59sfC/Q7Mn0b/XG3lDjB6b4SCvIVjZ5AQWPZg==')
+with open("/dbfs/gpkgs/asset_2.gpkg", "rb") as data:
+	blob_client.upload_blob(data, blob_type="BlockBlob")
+
+
+
+
+
+
+
+
+
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++================================================================================++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Databricks notebook source
+# MAGIC %md
+# MAGIC 
+# MAGIC This notebook shows you how to create and query a table or DataFrame loaded from data stored in Azure Blob storage.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC 
+# MAGIC ### Step 1: Set the data location and type
+# MAGIC 
+# MAGIC There are two ways to access Azure Blob storage: account keys and shared access signatures (SAS).
+# MAGIC 
+# MAGIC To get started, we need to set the location and type of the file.
+
+# COMMAND ----------
+
+storage_account_name = "STORAGE_ACCOUNT_NAME"
+storage_account_access_key = "YOUR_ACCESS_KEY"
+
+# COMMAND ----------
+
+file_location = "wasbs://example/location"
+file_type = "csv"
+
+# COMMAND ----------
+
+spark.conf.set(
+  "fs.azure.account.key."+storage_account_name+".blob.core.windows.net",
+  storage_account_access_key)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC 
+# MAGIC ### Step 2: Read the data
+# MAGIC 
+# MAGIC Now that we have specified our file metadata, we can create a DataFrame. Notice that we use an *option* to specify that we want to infer the schema from the file. We can also explicitly set this to a particular schema if we have one already.
+# MAGIC 
+# MAGIC First, let's create a DataFrame in Python.
+
+# COMMAND ----------
+
+df = spark.read.format(file_type).option("inferSchema", "true").load(file_location)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC 
+# MAGIC ### Step 3: Query the data
+# MAGIC 
+# MAGIC Now that we have created our DataFrame, we can query it. For instance, you can identify particular columns to select and display.
+
+# COMMAND ----------
+
+display(df.select("EXAMPLE_COLUMN"))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC 
+# MAGIC ### Step 4: (Optional) Create a view or table
+# MAGIC 
+# MAGIC If you want to query this data as a table, you can simply register it as a *view* or a table.
+
+# COMMAND ----------
+
+df.createOrReplaceTempView("YOUR_TEMP_VIEW_NAME")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC 
+# MAGIC We can query this view using Spark SQL. For instance, we can perform a simple aggregation. Notice how we can use `%sql` to query the view from SQL.
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC 
+# MAGIC SELECT EXAMPLE_GROUP, SUM(EXAMPLE_AGG) FROM YOUR_TEMP_VIEW_NAME GROUP BY EXAMPLE_GROUP
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC 
+# MAGIC Since this table is registered as a temp view, it will be available only to this notebook. If you'd like other users to be able to query this table, you can also create a table from the DataFrame.
+
+# COMMAND ----------
+
+df.write.format("parquet").saveAsTable("MY_PERMANENT_TABLE_NAME")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC 
+# MAGIC This table will persist across cluster restarts and allow various users across different notebooks to query this data.
+
+
