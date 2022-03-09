@@ -1,0 +1,139 @@
+from asyncio.log import logger
+import logging
+import os
+from http import HTTPStatus
+import azure.functions as func
+import uuid
+import json
+from azure.identity import ChainedTokenCredential, DefaultAzureCredential, ManagedIdentityCredential
+from azure.storage.blob import BlobServiceClient,BlobClient
+from datetime import datetime
+from .validate_request import ValidateRequest
+from .blob_schema import BlobSchema
+from DataAccessLayer.DatabaseAccess import DatabaseAccess
+from DataAccessLayer.DatabaseAccess import setConnParam
+from pathlib import Path
+import shutil
+from .directoryClient import DirectoryClient
+import ogr2ogr
+import asyncio
+
+async def main(req: func.HttpRequest) -> func.HttpResponse:
+    try:
+        mime_type = "application/json"
+        logging.error('++++++++++++++++Entered+++++++++++')
+        # currentroot = os.path.join(os.getcwd(),"uploadBlob")
+        # logging.error(f'{currentroot} current working directory currentroot')
+        # if not os.path.exists(currentroot):
+        #     logging.error('Path Exist==============')
+        #     os.makedirs(os.path(currentroot))
+        #     logging.error('Directory Created $$$$$$$$$$$$$$$$$$')
+
+
+        
+
+        logging.error('file_meta_data')
+        appId = req.params.get('appId')
+        mapId = req.params.get('mapId')
+
+        file_meta_data = json.loads(req.headers["X-File-Metadata"])
+        if (file_meta_data != None and len(file_meta_data) > 0):
+            connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+            #credential_chain = os.getenv("STORAGE_ACCOUNT_KEY")
+            managed_identity = ManagedIdentityCredential()
+            service_principal = DefaultAzureCredential()
+            credential_chain = ChainedTokenCredential(managed_identity, service_principal)
+            is_valid, return_object =  ValidateRequest(BlobSchema()).is_valid_payload(json.dumps(file_meta_data))
+            logging.error(str(is_valid))
+            if is_valid:
+                deliveryUnitId = return_object["deliveryUnitId"]
+                disciplineId = return_object["disciplineId"]
+                lastSyncDate = return_object["lastSyncDate"]
+                folderPath =  os.environ["BASE_FOLDER"]+'/'+deliveryUnitId+'/'+disciplineId
+                try:                               
+                    lastSyncDate= datetime.strptime(lastSyncDate.replace('/', ''),"%d%m%Y").date()
+                    lastSyncDate = lastSyncDate.strftime("%d%b%Y")  
+                except:
+                    status_code = HTTPStatus.BAD_REQUEST.value   
+                    response=json.dumps({"error": " invalid lastSyncDate format"})     
+                    raise  
+                container_name = os.environ["CONTAINER_PATH"]+'/'+folderPath
+                fileName = "AssetDelta" + lastSyncDate +'.'+ "gpkg"
+                filePath=container_name+'/'+fileName 
+                rootfolder=os.path.join(str(Path.home()),os.environ["CONTAINER_PATH"])
+                loc=os.path.join(str(Path.home()) ,container_name)
+                if not os.path.exists(loc):
+                    logging.error('rootfolder is created===========')
+                    os.makedirs(loc)
+                else:
+                    logging.error('rootfolder is removed===========')
+                    #shutil.rmtree(rootfolder, ignore_errors=True)
+                logging.error('Directory is created===========')
+                data= str(Path.home()) +'/'+ filePath 
+                logging.error(f'{data} pathlib file location')
+                ogr2ogr.main(["","-f", "GPKG",'-append',data,"MSSQL:SERVER=sqluksnprdiidevshd6001.database.windows.net;PORT=1433;DATABASE=Datamart;UID=Ellipse_APM_User;PWD=IIProgramme@345!", "-sql",'select top(5) A.[D_ASSET_KEY] AS D_ASSET_KEY ,A.[EQUIP_NO] AS EQUIP_NO ,A.[EQUIPMENT_GROUP_IDENTIFIER] AS EQUIPMENT_GROUP_IDENTIFIER ,A.[EQUIP_EGI_TYPE] AS EQUIP_EGI_TYPE ,A.[EQUIPMENT_STATUS] AS EQUIPMENT_STATUS ,A.[EQUIPMENT_CLASS_DESC] AS EQUIPMENT_CLASS_DESC ,A.[EQUIPMENT_TYPE] AS EQUIPMENT_TYPE ,A.[SERIAL_NUMBER] AS SERIAL_NUMBER ,A.[PURCHASE_PRICE] AS PURCHASE_PRICE ,A.[COMP_CODE] AS COMP_CODE ,A.[PART_NO] AS PART_NO ,A.[EQUIPMENT_LOCATION] AS EQUIPMENT_LOCATION ,A.[PURCHASE_DATE] AS PURCHASE_DATE ,A.[WARRANTY_DATE] AS WARRANTY_DATE ,A.[PARENT_ASSET] AS PARENT_ASSET ,A.[CONDITION_RATING] AS CONDITION_RATING ,A.[INTERLOCKING_NAME] AS INTERLOCKING_NAME ,A.[ITEM_NAME_CODE_DESC] AS ITEM_NAME_CODE_DESC ,A.[ITEM_NAME_CODE] AS ITEM_NAME_CODE ,A.[LABOUR_COSTING_ALLOWED] AS LABOUR_COSTING_ALLOWED ,A.[DELIVERY_UNIT] AS DELIVERY_UNIT ,A.[EXTERNAL_OWNERSHIP] AS EXTERNAL_OWNERSHIP ,A.[ASSET_NAME] AS ASSET_NAME ,A.[ASSET_TYPE] AS ASSET_TYPE ,A.[LOCAL_NAME] AS LOCAL_NAME ,A.[LOCAL_NAME_2] AS LOCAL_NAME_2 ,A.[MAINTAINER] AS MAINTAINER ,A.[MAINTENANCE_ENGINEER] AS MAINTENANCE_ENGINEER ,A.[SECTION_MANAGER] AS SECTION_MANAGER ,A.[TRACK_ID_REFERENCE] AS TRACK_ID_REFERENCE ,A.[EQUIP_COLLOQUIALS] AS EQUIP_COLLOQUIALS ,A.[YEAR_OF_INSTALLATION] AS YEAR_OF_INSTALLATION ,A.[YEAR_OF_MANUFACTURE] AS YEAR_OF_MANUFACTURE ,A.[ON_SITE_VER_DATE] AS ON_SITE_VER_DATE ,A.[POSITION] AS POSITION ,A.[ROUTE_ORIENTATION] AS ROUTE_ORIENTATION ,A.[ACTIVE_ROW_FLAG] AS ACTIVE_ROW_FLAG ,A.[ERROR_FLAG] AS ERROR_FLAG ,A.[ELR] AS ELR ,A.[START_YARDAGE] AS START_YARDAGE ,A.[END_YARDAGE] AS END_YARDAGE ,A.[EQUIP_GRP_HIERARCHY] AS EQUIP_GRP_HIERARCHY ,A.[PARENT_EQUIP_HIERACHY] AS PARENT_EQUIP_HIERACHY ,A.[EQUIPMENT_HIER_INFO] AS EQUIPMENT_HIER_INFO ,A.[CYCLE] AS CYCLE ,A.[HIER_LEVEL] AS HIER_LEVEL ,A.[EASTING] AS EASTING ,A.[NORTHING] AS NORTHING ,A.[MANUFACTURER] AS MANUFACTURER ,A.[SCDESIGN] AS SCDESIGN ,A.[INCLINEDVERT] AS INCLINEDVERT ,A.[CROSSPRES] AS CROSSPRES ,A.[ROUTE] AS ROUTE ,A.[EQUIPMENT_CLASS] AS EQUIPMENT_CLASS ,A.[ASSET_CATEGORY] AS ASSET_CATEGORY ,A.[ASSET_CATEGORY_DESC] AS ASSET_CATEGORY_DESC,B.[GEOM] AS GEOM from ADS_DM.DIM_ASSET A LEFT JOIN ADS_DM.DRAINAGE_ASSETS_GEOM B ON A.EQUIP_NO = B.equip_no ','-nln','Asset'])
+                await asyncio.sleep(5)
+                logging.error(' GeoPkg is created===============')
+                try:
+                    if os.path.exists(data):
+                        logging.error('file exist')
+                        # os.remove(fileName)
+                        # with open(os.path.join(data),'r') as _json_file:
+                        #     logging.error(f'{ _json_file.read()} data is read ')
+                    else:
+                        logging.error('No file exist ')
+                        with open(os.path.join(data),'w') as _json_file:
+                            ogr2ogr.main(["","-f", "GPKG",'-append',data,"MSSQL:SERVER=sqluksnprdiidevshd6001.database.windows.net;PORT=1433;DATABASE=Datamart;UID=Ellipse_APM_User;PWD=IIProgramme@345!", "-sql",'select top(5) A.[D_ASSET_KEY] AS D_ASSET_KEY ,A.[EQUIP_NO] AS EQUIP_NO ,A.[EQUIPMENT_GROUP_IDENTIFIER] AS EQUIPMENT_GROUP_IDENTIFIER ,A.[EQUIP_EGI_TYPE] AS EQUIP_EGI_TYPE ,A.[EQUIPMENT_STATUS] AS EQUIPMENT_STATUS ,A.[EQUIPMENT_CLASS_DESC] AS EQUIPMENT_CLASS_DESC ,A.[EQUIPMENT_TYPE] AS EQUIPMENT_TYPE ,A.[SERIAL_NUMBER] AS SERIAL_NUMBER ,A.[PURCHASE_PRICE] AS PURCHASE_PRICE ,A.[COMP_CODE] AS COMP_CODE ,A.[PART_NO] AS PART_NO ,A.[EQUIPMENT_LOCATION] AS EQUIPMENT_LOCATION ,A.[PURCHASE_DATE] AS PURCHASE_DATE ,A.[WARRANTY_DATE] AS WARRANTY_DATE ,A.[PARENT_ASSET] AS PARENT_ASSET ,A.[CONDITION_RATING] AS CONDITION_RATING ,A.[INTERLOCKING_NAME] AS INTERLOCKING_NAME ,A.[ITEM_NAME_CODE_DESC] AS ITEM_NAME_CODE_DESC ,A.[ITEM_NAME_CODE] AS ITEM_NAME_CODE ,A.[LABOUR_COSTING_ALLOWED] AS LABOUR_COSTING_ALLOWED ,A.[DELIVERY_UNIT] AS DELIVERY_UNIT ,A.[EXTERNAL_OWNERSHIP] AS EXTERNAL_OWNERSHIP ,A.[ASSET_NAME] AS ASSET_NAME ,A.[ASSET_TYPE] AS ASSET_TYPE ,A.[LOCAL_NAME] AS LOCAL_NAME ,A.[LOCAL_NAME_2] AS LOCAL_NAME_2 ,A.[MAINTAINER] AS MAINTAINER ,A.[MAINTENANCE_ENGINEER] AS MAINTENANCE_ENGINEER ,A.[SECTION_MANAGER] AS SECTION_MANAGER ,A.[TRACK_ID_REFERENCE] AS TRACK_ID_REFERENCE ,A.[EQUIP_COLLOQUIALS] AS EQUIP_COLLOQUIALS ,A.[YEAR_OF_INSTALLATION] AS YEAR_OF_INSTALLATION ,A.[YEAR_OF_MANUFACTURE] AS YEAR_OF_MANUFACTURE ,A.[ON_SITE_VER_DATE] AS ON_SITE_VER_DATE ,A.[POSITION] AS POSITION ,A.[ROUTE_ORIENTATION] AS ROUTE_ORIENTATION ,A.[ACTIVE_ROW_FLAG] AS ACTIVE_ROW_FLAG ,A.[ERROR_FLAG] AS ERROR_FLAG ,A.[ELR] AS ELR ,A.[START_YARDAGE] AS START_YARDAGE ,A.[END_YARDAGE] AS END_YARDAGE ,A.[EQUIP_GRP_HIERARCHY] AS EQUIP_GRP_HIERARCHY ,A.[PARENT_EQUIP_HIERACHY] AS PARENT_EQUIP_HIERACHY ,A.[EQUIPMENT_HIER_INFO] AS EQUIPMENT_HIER_INFO ,A.[CYCLE] AS CYCLE ,A.[HIER_LEVEL] AS HIER_LEVEL ,A.[EASTING] AS EASTING ,A.[NORTHING] AS NORTHING ,A.[MANUFACTURER] AS MANUFACTURER ,A.[SCDESIGN] AS SCDESIGN ,A.[INCLINEDVERT] AS INCLINEDVERT ,A.[CROSSPRES] AS CROSSPRES ,A.[ROUTE] AS ROUTE ,A.[EQUIPMENT_CLASS] AS EQUIPMENT_CLASS ,A.[ASSET_CATEGORY] AS ASSET_CATEGORY ,A.[ASSET_CATEGORY_DESC] AS ASSET_CATEGORY_DESC,B.[GEOM] AS GEOM from ADS_DM.DIM_ASSET A LEFT JOIN ADS_DM.DRAINAGE_ASSETS_GEOM B ON A.EQUIP_NO = B.equip_no ','-nln','Asset'])
+                            await asyncio.sleep(5)
+                            logging.error(' GeoPkg inner is created===============')
+                        #     #file = open(full_path_to_file,  'w')
+                        #     _json_file.write("Hello, World! = " + datetime.now().strftime("%d.%b %Y %H:%M:%S"))
+                            _json_file.close()
+                        #     logging.error('file close')
+                except Exception as ex:
+                    logging.error(str(ex))
+                    logging.error('file Exception')
+                    status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
+                    logging.error(status_code)
+                    response = json.dumps({"error": str(ex)}) 
+                    logging.error(response)
+                    raise        
+                #ogr2ogr.main(["","-f", "GPKG",'-append',data,"MSSQL:SERVER=sqluksnprdiidevshd6001.database.windows.net;PORT=1433;DATABASE=Datamart;UID=Ellipse_APM_User;PWD=IIProgramme@345!", "-sql",'select top(5) A.[D_ASSET_KEY] AS D_ASSET_KEY ,A.[EQUIP_NO] AS EQUIP_NO ,A.[EQUIPMENT_GROUP_IDENTIFIER] AS EQUIPMENT_GROUP_IDENTIFIER ,A.[EQUIP_EGI_TYPE] AS EQUIP_EGI_TYPE ,A.[EQUIPMENT_STATUS] AS EQUIPMENT_STATUS ,A.[EQUIPMENT_CLASS_DESC] AS EQUIPMENT_CLASS_DESC ,A.[EQUIPMENT_TYPE] AS EQUIPMENT_TYPE ,A.[SERIAL_NUMBER] AS SERIAL_NUMBER ,A.[PURCHASE_PRICE] AS PURCHASE_PRICE ,A.[COMP_CODE] AS COMP_CODE ,A.[PART_NO] AS PART_NO ,A.[EQUIPMENT_LOCATION] AS EQUIPMENT_LOCATION ,A.[PURCHASE_DATE] AS PURCHASE_DATE ,A.[WARRANTY_DATE] AS WARRANTY_DATE ,A.[PARENT_ASSET] AS PARENT_ASSET ,A.[CONDITION_RATING] AS CONDITION_RATING ,A.[INTERLOCKING_NAME] AS INTERLOCKING_NAME ,A.[ITEM_NAME_CODE_DESC] AS ITEM_NAME_CODE_DESC ,A.[ITEM_NAME_CODE] AS ITEM_NAME_CODE ,A.[LABOUR_COSTING_ALLOWED] AS LABOUR_COSTING_ALLOWED ,A.[DELIVERY_UNIT] AS DELIVERY_UNIT ,A.[EXTERNAL_OWNERSHIP] AS EXTERNAL_OWNERSHIP ,A.[ASSET_NAME] AS ASSET_NAME ,A.[ASSET_TYPE] AS ASSET_TYPE ,A.[LOCAL_NAME] AS LOCAL_NAME ,A.[LOCAL_NAME_2] AS LOCAL_NAME_2 ,A.[MAINTAINER] AS MAINTAINER ,A.[MAINTENANCE_ENGINEER] AS MAINTENANCE_ENGINEER ,A.[SECTION_MANAGER] AS SECTION_MANAGER ,A.[TRACK_ID_REFERENCE] AS TRACK_ID_REFERENCE ,A.[EQUIP_COLLOQUIALS] AS EQUIP_COLLOQUIALS ,A.[YEAR_OF_INSTALLATION] AS YEAR_OF_INSTALLATION ,A.[YEAR_OF_MANUFACTURE] AS YEAR_OF_MANUFACTURE ,A.[ON_SITE_VER_DATE] AS ON_SITE_VER_DATE ,A.[POSITION] AS POSITION ,A.[ROUTE_ORIENTATION] AS ROUTE_ORIENTATION ,A.[ACTIVE_ROW_FLAG] AS ACTIVE_ROW_FLAG ,A.[ERROR_FLAG] AS ERROR_FLAG ,A.[ELR] AS ELR ,A.[START_YARDAGE] AS START_YARDAGE ,A.[END_YARDAGE] AS END_YARDAGE ,A.[EQUIP_GRP_HIERARCHY] AS EQUIP_GRP_HIERARCHY ,A.[PARENT_EQUIP_HIERACHY] AS PARENT_EQUIP_HIERACHY ,A.[EQUIPMENT_HIER_INFO] AS EQUIPMENT_HIER_INFO ,A.[CYCLE] AS CYCLE ,A.[HIER_LEVEL] AS HIER_LEVEL ,A.[EASTING] AS EASTING ,A.[NORTHING] AS NORTHING ,A.[MANUFACTURER] AS MANUFACTURER ,A.[SCDESIGN] AS SCDESIGN ,A.[INCLINEDVERT] AS INCLINEDVERT ,A.[CROSSPRES] AS CROSSPRES ,A.[ROUTE] AS ROUTE ,A.[EQUIPMENT_CLASS] AS EQUIPMENT_CLASS ,A.[ASSET_CATEGORY] AS ASSET_CATEGORY ,A.[ASSET_CATEGORY_DESC] AS ASSET_CATEGORY_DESC,B.[GEOM] AS GEOM from ADS_DM.DIM_ASSET A LEFT JOIN ADS_DM.DRAINAGE_ASSETS_GEOM B ON A.EQUIP_NO = B.equip_no ','-nln','Asset'])
+                #logging.error(' GeoPkg inner + inner is created===============')
+                blob_service_client_instance = BlobServiceClient(account_url=connection_string, credential=credential_chain)  
+                blob_client_instance = blob_service_client_instance.get_blob_client(container_name , fileName, snapshot=None)
+                blodExists= blob_client_instance.exists()
+                if blodExists:
+                    logging.error(' Blob Exist ===============')
+                    blob_data = blob_client_instance.download_blob()
+                    response = blob_data.readall()    
+                    response = json.dumps({"relativePath":str(filePath),"result": str(response)})                                    
+                    status_code=HTTPStatus.OK.value
+                else:
+                    logging.error(' Blob  is created===============')
+                   
+                    # blob = BlobClient(connection_string, container_name= container_name, blob_name = str(fileName), credential=account_key)
+                    # blob.upload_blob(sqlresponse, blob_type = "BlockBlob")
+                    client = DirectoryClient(connection_string=connection_string, container_name=os.environ["CONTAINER_PATH"],credential=credential_chain,)
+                    path=os.path.join(rootfolder,os.environ["BASE_FOLDER"])
+                    client.upload(path ,'')
+                    #client.upload(fileName ,path)
+                    status_code = HTTPStatus.BAD_REQUEST.value
+                    response=json.dumps({"success": "File Uploaded successfully","relativePath":str(filePath)})  
+            else:
+                status_code = HTTPStatus.BAD_REQUEST.value
+                response=json.dumps({"error": str(return_object)}) 
+        else:
+            status_code = HTTPStatus.BAD_REQUEST.value
+            response=json.dumps({"error": "Request Header[X-File-Metadata] is not a valid json"})
+    except Exception as ex:
+        status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
+        response = json.dumps({"error": str(ex)}) 
+    finally:
+        return func.HttpResponse(response, status_code= status_code, mimetype= mime_type)
+
+    
+
+
+if __name__ == '__main__':
+    main(func.HttpRequest)
